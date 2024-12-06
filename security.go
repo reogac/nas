@@ -7,8 +7,8 @@ import (
 
 	"github.com/aead/cmac"
 
-	"nas/snow3g"
-	"nas/zuc"
+	"github.com/reogac/nas/snow3g"
+	"github.com/reogac/nas/zuc"
 )
 
 func NEA1(ck [16]byte, countC, bearer, direction uint32, ibs []byte, length uint32) (obs []byte, err error) {

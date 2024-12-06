@@ -2,7 +2,7 @@ package nas
 
 import (
 	"fmt"
-	"nas/sec"
+	"github.com/reogac/nas/sec"
 	"sync"
 )
 
