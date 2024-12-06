@@ -1,4 +1,4 @@
-module nas
+module github.com/reogac/nas
 
 go 1.22.4
 
