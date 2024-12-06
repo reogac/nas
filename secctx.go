@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"nas/sec"
+	"github.com/reogac/nas/sec"
 )
 
 const (
