@@ -5,7 +5,7 @@ go 1.22.4
 require (
 	github.com/aead/cmac v0.0.0-20160719120800-7af84192f0b1
 	github.com/sirupsen/logrus v1.9.3
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
