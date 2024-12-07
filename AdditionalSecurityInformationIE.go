@@ -26,6 +26,10 @@ func (ie *AdditionalSecurityInformation) decode(wire []byte) (err error) {
 	return
 }
 
+func (ie *AdditionalSecurityInformation) GetRetransmission() bool {
+	return getBit(ie.value, 1) == 1
+}
+
 func (ie *AdditionalSecurityInformation) SetRetransmission(flag bool) {
 	if flag {
 		setBit(ie.value, 1)
@@ -33,6 +37,10 @@ func (ie *AdditionalSecurityInformation) SetRetransmission(flag bool) {
 		clearBit(ie.value, 1)
 	}
 }
+func (ie *AdditionalSecurityInformation) GetHoDerivation() bool {
+	return getBit(ie.value, 0) == 1
+}
+
 func (ie *AdditionalSecurityInformation) SetHoDerivation(flag bool) {
 	if flag {
 		setBit(ie.value, 0)

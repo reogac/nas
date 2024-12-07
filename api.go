@@ -107,8 +107,13 @@ func EncodeMm(ctx *NasContext, msg GmmMessage) (wire []byte, err error) {
 	return
 }
 
+func (ctx *NasContext) EncryptMmContainer(plain []byte) (cipher []byte, err error) {
+	cipher, err = ctx.encrypt(plain, true) //for sending
+	return
+}
+
 func (ctx *NasContext) DecodeMmContainer(wire []byte) (gmm DecodedGmmMessage, err error) {
-	if wire, err = ctx.encrypt(wire, false); err == nil {
+	if wire, err = ctx.encrypt(wire, false); err == nil { //for receiving
 		err = nasError("fail to decrypt MM container", err)
 		gmm, err = decodePlainMm(wire)
 	}
