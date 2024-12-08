@@ -48,6 +48,11 @@ func (ctx *SecurityContext) NasContext() *NasContext {
 	return nil
 }
 
+func (ctx *SecurityContext) SetAlgorithms(encAlg byte, intAlg byte) {
+	ctx.nasCtx.setAlgorithms(encAlg, intAlg)
+
+}
+
 func (ctx *SecurityContext) SelectAlgorithms(intOrder []byte, encOrder []byte, ueSecCap *UeSecurityCapability) {
 	ctx.nasCtx.selectAlgorithms(intOrder, encOrder, ueSecCap)
 }
@@ -141,7 +146,7 @@ func (ctx *SecurityContext) DeriveAlgKeys(hdp uint8) (err error) {
 
 	//then derive key for nas context
 	log.Tracef("Security context's KAMF = %x", ctx.kamf)
-	if err = ctx.nasCtx.DeriveKeys(kamf); err == nil {
+	if err = ctx.nasCtx.deriveKeys(kamf); err == nil {
 		ctx.kamf = kamf
 		ctx.active = true //activate the security context
 	}

@@ -116,11 +116,16 @@ func (ctx *NasContext) selectAlgorithms(intOrder []byte, encOrder []byte, ueSecC
 
 }
 
+func (ctx *NasContext) setAlgorithms(encAlg uint8, intAlg uint8) {
+	ctx.encAlg = encAlg
+	ctx.intAlg = intAlg
+}
+
 func (ctx *NasContext) SelectedAlgorithms() (uint8, uint8) {
 	return ctx.encAlg, ctx.intAlg
 }
 
-func (ctx *NasContext) DeriveKeys(kAmf []byte) (err error) {
+func (ctx *NasContext) deriveKeys(kAmf []byte) (err error) {
 	// Encryption Key
 	P0 := []byte{NNASEncAlg}
 	P1 := []byte{ctx.encAlg}

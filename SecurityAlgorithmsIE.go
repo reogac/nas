@@ -26,3 +26,11 @@ func (ie *SecurityAlgorithms) decode(wire []byte) (err error) {
 	ie.value = wire[0]
 	return
 }
+
+func (ie *SecurityAlgorithms) IntAlg() uint8 {
+	return ie.value & 0x0f
+}
+
+func (ie *SecurityAlgorithms) EncAlg() uint8 {
+	return ie.value & 0xf0 >> 4
+}
