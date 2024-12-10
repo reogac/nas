@@ -72,9 +72,6 @@ func (ctx *NasContext) setDirection(isDownlink bool) {
 }
 
 func (ctx *NasContext) selectAlgorithms(intOrder []byte, encOrder []byte, ueSecCap *UeSecurityCapability) {
-	ctx.encAlg = 1 //AlgCiphering128NEA1
-	ctx.intAlg = 1 //AlgIntegrity128NIA1
-	return
 	//for oai ue
 	ctx.encAlg = AlgCiphering128NEA0
 	ctx.intAlg = AlgIntegrity128NIA2

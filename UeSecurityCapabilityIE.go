@@ -52,7 +52,7 @@ func (ie *UeSecurityCapability) getBit(row uint8, pos uint8) bool {
 		return false
 	}
 
-	return getBit(ie.bytes[row], pos) == 1
+	return getBit(ie.bytes[row], (7-pos)) == 1
 }
 
 func (ie *UeSecurityCapability) setBit(row uint8, pos uint8, v bool) {
@@ -65,9 +65,9 @@ func (ie *UeSecurityCapability) setBit(row uint8, pos uint8, v bool) {
 	}
 
 	if v {
-		ie.bytes[row] |= 1 << pos //set
+		ie.bytes[row] |= 1 << (7 - pos) //set
 	} else {
-		ie.bytes[row] &= ^(1 << pos) //unset
+		ie.bytes[row] &= ^(1 << (7 - pos)) //unset
 	}
 }
 
