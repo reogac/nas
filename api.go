@@ -10,7 +10,7 @@ import (
 var log *logrus.Entry
 
 func init() {
-	log = logrus.WithFields(logrus.Fields{"mod": "milenage"})
+	log = logrus.WithFields(logrus.Fields{"mod": "nas"})
 }
 
 type Encoder interface {
