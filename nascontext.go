@@ -173,6 +173,7 @@ func (ctx *NasContext) encrypt(payload []byte, isSending bool) (output []byte, e
 	switch ctx.encAlg {
 	case AlgCiphering128NEA0:
 		log.Debugf("Use NEA0")
+		output = payload
 	case AlgCiphering128NEA1:
 		log.Debugln("Use NEA1")
 		output, err = NEA1(ctx.encKey, counter, uint32(ctx.bearer), uint32(direction), payload, uint32(len(payload))*8)
