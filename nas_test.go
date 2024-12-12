@@ -11,9 +11,7 @@ func Test_NasEncoding(t *testing.T) {
 	guti.AmfId.Set(10, 100, 50)
 
 	msg := &RegistrationRequest{
-		RegistrationType: RegistrationType{
-			Value: 2,
-		},
+		RegistrationType: NewRegistrationType(true, RegistrationType5GSInitialRegistration),
 		MobileIdentity: MobileIdentity{
 			Id: guti,
 		},
@@ -45,8 +43,8 @@ func Test_NasEncoding(t *testing.T) {
 		}
 		var newMsg *RegistrationRequest
 		newMsg = nasMsg.Gmm.RegistrationRequest
-		if newMsg.RegistrationType.Value != msg.RegistrationType.Value {
-			t.Errorf("Decode fail: mismatched registration type %d:%d", msg.RegistrationType.Value, newMsg.RegistrationType.Value)
+		if newMsg.RegistrationType.value != msg.RegistrationType.value {
+			t.Errorf("Decode fail: mismatched registration type %d:%d", msg.RegistrationType.value, newMsg.RegistrationType.value)
 		}
 		newGuti := newMsg.MobileIdentity.Id.(*Guti)
 		mcc, mnc := newGuti.PlmnId.Get()
