@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.944726**/
+/**generated time: 2024-12-16 16:36:18.695516**/
 
 package nas
 
@@ -7,9 +7,9 @@ package nas
  ******************************************************/
 type SecurityModeComplete struct {
 	MmHeader
-	Imeisv              *MobileIdentity //TLV-E [77][12]
-	NasMessageContainer *Bytes          //TLV-E [71][4-n]
-	NonImeisvPei        *MobileIdentity //TLV-E [78][7-n]
+	Imeisv              *MobileIdentity //O: TLV-E [77][12]
+	NasMessageContainer []byte          //O: TLV-E [71][4-n]
+	NonImeisvPei        *MobileIdentity //O: TLV-E [78][7-n]
 }
 
 func (msg *SecurityModeComplete) encode() (wire []byte, err error) {
@@ -19,8 +19,8 @@ func (msg *SecurityModeComplete) encode() (wire []byte, err error) {
 		}
 	}()
 	var buf []byte
+	// O: TLV-E[12]
 	if msg.Imeisv != nil {
-		// TLV-E[12]
 		if buf, err = encodeLV(true, uint16(9), uint16(9), msg.Imeisv); err != nil {
 			err = nasError("encoding Imeisv [O TLV-E 12]", err)
 			return
@@ -28,17 +28,18 @@ func (msg *SecurityModeComplete) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x77), buf...)
 	}
 
-	if msg.NasMessageContainer != nil {
-		// TLV-E[4-n]
-		if buf, err = encodeLV(true, uint16(1), uint16(0), msg.NasMessageContainer); err != nil {
+	// O: TLV-E[4-n]
+	if len(msg.NasMessageContainer) > 0 {
+		tmp := newBytesEncoder(msg.NasMessageContainer)
+		if buf, err = encodeLV(true, uint16(1), uint16(0), tmp); err != nil {
 			err = nasError("encoding NasMessageContainer [O TLV-E 4-n]", err)
 			return
 		}
 		wire = append(append(wire, 0x71), buf...)
 	}
 
+	// O: TLV-E[7-n]
 	if msg.NonImeisvPei != nil {
-		// TLV-E[7-n]
 		if buf, err = encodeLV(true, uint16(4), uint16(0), msg.NonImeisvPei); err != nil {
 			err = nasError("encoding NonImeisvPei [O TLV-E 7-n]", err)
 			return
@@ -62,27 +63,27 @@ func (msg *SecurityModeComplete) decodeBody(wire []byte) (err error) {
 	for offset < wireLen {
 		iei := getIei(wire[offset])
 		switch iei {
-		case 0x77: //TLV-E[12]
+		case 0x77: //O: TLV-E[12]
 			offset++ //consume IEI
-			v := &MobileIdentity{}
+			v := new(MobileIdentity)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(9), uint16(9), v); err != nil {
 				err = nasError("decoding Imeisv [O TLV-E 12]", err)
 				return
 			}
 			offset += consumed
 			msg.Imeisv = v
-		case 0x71: //TLV-E[4-n]
+		case 0x71: //O: TLV-E[4-n]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), v); err != nil {
 				err = nasError("decoding NasMessageContainer [O TLV-E 4-n]", err)
 				return
 			}
 			offset += consumed
-			msg.NasMessageContainer = v
-		case 0x78: //TLV-E[7-n]
+			msg.NasMessageContainer = []byte(*v)
+		case 0x78: //O: TLV-E[7-n]
 			offset++ //consume IEI
-			v := &MobileIdentity{}
+			v := new(MobileIdentity)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(0), v); err != nil {
 				err = nasError("decoding NonImeisvPei [O TLV-E 7-n]", err)
 				return

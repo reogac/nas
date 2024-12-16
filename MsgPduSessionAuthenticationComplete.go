@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.947408**/
+/**generated time: 2024-12-16 16:36:18.697437**/
 
 package nas
 
@@ -7,8 +7,8 @@ package nas
  ******************************************************/
 type PduSessionAuthenticationComplete struct {
 	SmHeader
-	EapMessage                           Bytes                                 //LV-E [6-1502]
-	ExtendedProtocolConfigurationOptions *ExtendedProtocolConfigurationOptions //TLV-E [7B][4-65538]
+	EapMessage                           []byte                                //M: LV-E [6-1502]
+	ExtendedProtocolConfigurationOptions *ExtendedProtocolConfigurationOptions //O: TLV-E [7B][4-65538]
 }
 
 func (msg *PduSessionAuthenticationComplete) encode() (wire []byte, err error) {
@@ -18,15 +18,16 @@ func (msg *PduSessionAuthenticationComplete) encode() (wire []byte, err error) {
 		}
 	}()
 	var buf []byte
-	// LV-E[6-1502]
-	if buf, err = encodeLV(true, uint16(4), uint16(1500), &msg.EapMessage); err != nil {
+	// M: LV-E[6-1502]
+	tmp := newBytesEncoder(msg.EapMessage)
+	if buf, err = encodeLV(true, uint16(4), uint16(1500), tmp); err != nil {
 		err = nasError("encoding EapMessage [M LV-E 6-1502]", err)
 		return
 	}
 	wire = append(wire, buf...)
 
+	// O: TLV-E[4-65538]
 	if msg.ExtendedProtocolConfigurationOptions != nil {
-		// TLV-E[4-65538]
 		if buf, err = encodeLV(true, uint16(1), uint16(0), msg.ExtendedProtocolConfigurationOptions); err != nil {
 			err = nasError("encoding ExtendedProtocolConfigurationOptions [O TLV-E 4-65538]", err)
 			return
@@ -47,18 +48,20 @@ func (msg *PduSessionAuthenticationComplete) decodeBody(wire []byte) (err error)
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0
-	// LV-E[6-1502]
-	if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(1500), &msg.EapMessage); err != nil {
+	// M LV-E[6-1502]
+	v := new(bytesDecoder)
+	if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(1500), v); err != nil {
 		err = nasError("decoding EapMessage [M LV-E 6-1502]", err)
 		return
 	}
 	offset += consumed
+	msg.EapMessage = []byte(*v)
 	for offset < wireLen {
 		iei := getIei(wire[offset])
 		switch iei {
-		case 0x7B: //TLV-E[4-65538]
+		case 0x7B: //O: TLV-E[4-65538]
 			offset++ //consume IEI
-			v := &ExtendedProtocolConfigurationOptions{}
+			v := new(ExtendedProtocolConfigurationOptions)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), v); err != nil {
 				err = nasError("decoding ExtendedProtocolConfigurationOptions [O TLV-E 4-65538]", err)
 				return

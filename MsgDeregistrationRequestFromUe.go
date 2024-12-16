@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.941103**/
+/**generated time: 2024-12-16 16:36:18.692924**/
 
 package nas
 
@@ -7,9 +7,9 @@ package nas
  ******************************************************/
 type DeregistrationRequestFromUe struct {
 	MmHeader
-	DeRegistrationType DeRegistrationType //V [1/2]
-	Ngksi              KeySetIdentifier   //V [1/2]
-	MobileIdentity     MobileIdentity     //LV-E [6-n]
+	DeRegistrationType DeRegistrationType //M: V [1/2]
+	Ngksi              KeySetIdentifier   //M: V [1/2]
+	MobileIdentity     MobileIdentity     //M: LV-E [6-n]
 }
 
 func (msg *DeregistrationRequestFromUe) encode() (wire []byte, err error) {
@@ -19,7 +19,7 @@ func (msg *DeregistrationRequestFromUe) encode() (wire []byte, err error) {
 		}
 	}()
 	var buf []byte
-	// V[1/2]
+	// M: V[1/2]
 	if buf, err = msg.DeRegistrationType.encode(); err != nil {
 		err = nasError("encoding DeRegistrationType [M V 1/2]", err)
 		return
@@ -29,7 +29,7 @@ func (msg *DeregistrationRequestFromUe) encode() (wire []byte, err error) {
 		return
 	}
 	v := (buf[0] & 0x0f) //fill righthalf
-	// V[1/2]
+	// M: V[1/2]
 	if buf, err = msg.Ngksi.encode(); err != nil {
 		err = nasError("encoding Ngksi [M V 1/2]", err)
 		return
@@ -41,7 +41,7 @@ func (msg *DeregistrationRequestFromUe) encode() (wire []byte, err error) {
 	v |= (buf[0] & 0x0f) << 4 //fill lefthalf
 	wire = append(wire, v)
 
-	// LV-E[6-n]
+	// M: LV-E[6-n]
 	if buf, err = encodeLV(true, uint16(4), uint16(0), &msg.MobileIdentity); err != nil {
 		err = nasError("encoding MobileIdentity [M LV-E 6-n]", err)
 		return
@@ -61,7 +61,7 @@ func (msg *DeregistrationRequestFromUe) decodeBody(wire []byte) (err error) {
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0
-	// V[1/2]
+	// M V[1/2]
 	if offset+1 > wireLen {
 		err = nasError("decoding DeRegistrationType [M V 1/2]", ErrIncomplete)
 		return
@@ -70,14 +70,14 @@ func (msg *DeregistrationRequestFromUe) decodeBody(wire []byte) (err error) {
 		err = nasError("decoding DeRegistrationType [M V 1/2]", err)
 		return
 	}
-	// V[1/2]
+	// M V[1/2]
 	if err = msg.Ngksi.decode([]byte{(0xf0 & wire[offset]) >> 4 /*lefthalf*/}); err != nil {
 		err = nasError("decoding Ngksi [M V 1/2]", err)
 		return
 	}
 	offset++
 
-	// LV-E[6-n]
+	// M LV-E[6-n]
 	if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(0), &msg.MobileIdentity); err != nil {
 		err = nasError("decoding MobileIdentity [M LV-E 6-n]", err)
 		return

@@ -27,10 +27,12 @@ func Test_NasEncoding(t *testing.T) {
 			Tsc: 0,
 			Id:  4,
 		},
-		PayloadContainerType:   NewUint8(1),
-		NasMessageContainer:    NewBytes([]byte{1}), //not-empty
-		EpsBearerContextStatus: NewUint16(100),
+		PayloadContainerType:   new(uint8),
+		NasMessageContainer:    []byte{1}, //not-empty
+		EpsBearerContextStatus: new(uint16),
 	}
+	*msg.PayloadContainerType = 1
+	*msg.EpsBearerContextStatus = 100
 	msg.SetSecurityHeader(0)
 	if buf, err := EncodeMm(nil, msg); err != nil {
 		t.Errorf("Encode fail: %+v", err)
@@ -60,34 +62,3 @@ func Test_NasEncoding(t *testing.T) {
 		t.Logf("EpsBearerContextStatus=%d\n", *newMsg.EpsBearerContextStatus)
 	}
 }
-
-/*
-example code for benchmarking
-type P struct {
-	v int
-}
-
-func (p *P) Inc() {
-	p.v++
-}
-
-type IncInf interface {
-	Inc()
-}
-
-func BenchmarkNoCast(b *testing.B) {
-	p := &P{}
-	for i := 0; i < b.N; i++ {
-		p.Inc()
-	}
-}
-
-func BenchmarkCast(b *testing.B) {
-	var a any = &P{}
-	for i := 0; i < b.N; i++ {
-		if inf, ok := a.(IncInf); ok {
-			inf.Inc()
-		}
-	}
-}
-*/

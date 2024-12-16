@@ -5,21 +5,6 @@ import (
 	"fmt"
 )
 
-func twoBytes(v uint16) []byte {
-	var buf [2]byte
-	binary.BigEndian.PutUint16(buf[:], v)
-	return buf[:]
-}
-
-func fromTwoBytes(buf []byte) (v uint16, err error) {
-	if len(buf) == 2 {
-		v = binary.BigEndian.Uint16(buf)
-	} else {
-		err = ErrInvalidSize
-	}
-	return
-}
-
 func getIei(v uint8) uint8 {
 	if v >= 0x80 {
 		return v & 0xf0 >> 4

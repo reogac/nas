@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.944165**/
+/**generated time: 2024-12-16 16:36:18.695109**/
 
 package nas
 
@@ -7,9 +7,9 @@ package nas
  ******************************************************/
 type AuthenticationResult struct {
 	MmHeader
-	Ngksi      KeySetIdentifier //V [1/2]
-	EapMessage Bytes            //LV-E [6-1502]
-	Abba       *Bytes           //TLV [38][4-n]
+	Ngksi      KeySetIdentifier //M: V [1/2]
+	EapMessage []byte           //M: LV-E [6-1502]
+	Abba       []byte           //O: TLV [38][4-n]
 }
 
 func (msg *AuthenticationResult) encode() (wire []byte, err error) {
@@ -19,7 +19,7 @@ func (msg *AuthenticationResult) encode() (wire []byte, err error) {
 		}
 	}()
 	var buf []byte
-	// V[1/2]
+	// M: V[1/2]
 	if buf, err = msg.Ngksi.encode(); err != nil {
 		err = nasError("encoding Ngksi [M V 1/2]", err)
 		return
@@ -29,18 +29,20 @@ func (msg *AuthenticationResult) encode() (wire []byte, err error) {
 		return
 	}
 	v := (buf[0] & 0x0f) //fill righthalf
-	// LV-E[6-1502]
+	// M: LV-E[6-1502]
 	wire = append(wire, v)
 
-	if buf, err = encodeLV(true, uint16(4), uint16(1500), &msg.EapMessage); err != nil {
+	tmp := newBytesEncoder(msg.EapMessage)
+	if buf, err = encodeLV(true, uint16(4), uint16(1500), tmp); err != nil {
 		err = nasError("encoding EapMessage [M LV-E 6-1502]", err)
 		return
 	}
 	wire = append(wire, buf...)
 
-	if msg.Abba != nil {
-		// TLV[4-n]
-		if buf, err = encodeLV(false, uint16(2), uint16(0), msg.Abba); err != nil {
+	// O: TLV[4-n]
+	if len(msg.Abba) > 0 {
+		tmp := newBytesEncoder(msg.Abba)
+		if buf, err = encodeLV(false, uint16(2), uint16(0), tmp); err != nil {
 			err = nasError("encoding Abba [O TLV 4-n]", err)
 			return
 		}
@@ -60,7 +62,7 @@ func (msg *AuthenticationResult) decodeBody(wire []byte) (err error) {
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0
-	// V[1/2]
+	// M V[1/2]
 	if offset+1 > wireLen {
 		err = nasError("decoding Ngksi [M V 1/2]", ErrIncomplete)
 		return
@@ -69,26 +71,28 @@ func (msg *AuthenticationResult) decodeBody(wire []byte) (err error) {
 		err = nasError("decoding Ngksi [M V 1/2]", err)
 		return
 	}
-	// LV-E[6-1502]
+	// M LV-E[6-1502]
 	offset++
 
-	if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(1500), &msg.EapMessage); err != nil {
+	v := new(bytesDecoder)
+	if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(1500), v); err != nil {
 		err = nasError("decoding EapMessage [M LV-E 6-1502]", err)
 		return
 	}
 	offset += consumed
+	msg.EapMessage = []byte(*v)
 	for offset < wireLen {
 		iei := getIei(wire[offset])
 		switch iei {
-		case 0x38: //TLV[4-n]
+		case 0x38: //O: TLV[4-n]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(0), v); err != nil {
 				err = nasError("decoding Abba [O TLV 4-n]", err)
 				return
 			}
 			offset += consumed
-			msg.Abba = v
+			msg.Abba = []byte(*v)
 		default:
 			err = ErrUnknownIei
 			return

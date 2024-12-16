@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.944068**/
+/**generated time: 2024-12-16 16:36:18.695036**/
 
 package nas
 
@@ -7,8 +7,8 @@ package nas
  ******************************************************/
 type AuthenticationFailure struct {
 	MmHeader
-	GmmCause                       Uint8  //V [1]
-	AuthenticationFailureParameter *Bytes //TLV [30][16]
+	GmmCause                       uint8  //M: V [1]
+	AuthenticationFailureParameter []byte //O: TLV [30][16]
 }
 
 func (msg *AuthenticationFailure) encode() (wire []byte, err error) {
@@ -18,12 +18,13 @@ func (msg *AuthenticationFailure) encode() (wire []byte, err error) {
 		}
 	}()
 	var buf []byte
-	// V[1]
+	// M: V[1]
 	wire = append(wire, uint8(msg.GmmCause))
 
-	if msg.AuthenticationFailureParameter != nil {
-		// TLV[16]
-		if buf, err = encodeLV(false, uint16(14), uint16(14), msg.AuthenticationFailureParameter); err != nil {
+	// O: TLV[16]
+	if len(msg.AuthenticationFailureParameter) > 0 {
+		tmp := newBytesEncoder(msg.AuthenticationFailureParameter)
+		if buf, err = encodeLV(false, uint16(14), uint16(14), tmp); err != nil {
 			err = nasError("encoding AuthenticationFailureParameter [O TLV 16]", err)
 			return
 		}
@@ -43,26 +44,26 @@ func (msg *AuthenticationFailure) decodeBody(wire []byte) (err error) {
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0
-	// V[1]
+	// M V[1]
 	if offset+1 > wireLen {
 		err = nasError("decoding GmmCause [M V 1]", ErrIncomplete)
 		return
 	}
-	msg.GmmCause = Uint8(wire[offset])
+	msg.GmmCause = wire[offset]
 	offset++
 
 	for offset < wireLen {
 		iei := getIei(wire[offset])
 		switch iei {
-		case 0x30: //TLV[16]
+		case 0x30: //O: TLV[16]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(14), uint16(14), v); err != nil {
 				err = nasError("decoding AuthenticationFailureParameter [O TLV 16]", err)
 				return
 			}
 			offset += consumed
-			msg.AuthenticationFailureParameter = v
+			msg.AuthenticationFailureParameter = []byte(*v)
 		default:
 			err = ErrUnknownIei
 			return

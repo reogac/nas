@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.944856**/
+/**generated time: 2024-12-16 16:36:18.695613**/
 
 package nas
 
@@ -7,7 +7,7 @@ package nas
  ******************************************************/
 type SecurityModeReject struct {
 	MmHeader
-	GmmCause Uint8 //V [1]
+	GmmCause uint8 //M: V [1]
 }
 
 func (msg *SecurityModeReject) encode() (wire []byte, err error) {
@@ -16,7 +16,7 @@ func (msg *SecurityModeReject) encode() (wire []byte, err error) {
 			err = nasError("encoding SecurityModeReject", err)
 		}
 	}()
-	// V[1]
+	// M: V[1]
 	wire = append(wire, uint8(msg.GmmCause))
 
 	msg.msgType = SecurityModeRejectMsgType //set message type to SECURITY MODE REJECT
@@ -31,12 +31,12 @@ func (msg *SecurityModeReject) decodeBody(wire []byte) (err error) {
 	}()
 	offset := 0
 	wireLen := len(wire)
-	// V[1]
+	// M V[1]
 	if offset+1 > wireLen {
 		err = nasError("decoding GmmCause [M V 1]", ErrIncomplete)
 		return
 	}
-	msg.GmmCause = Uint8(wire[offset])
+	msg.GmmCause = wire[offset]
 	offset++
 
 	return

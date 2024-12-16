@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.940595**/
+/**generated time: 2024-12-16 16:36:18.692558**/
 
 package nas
 
@@ -7,7 +7,7 @@ package nas
  ******************************************************/
 type RegistrationComplete struct {
 	MmHeader
-	SorTransparentContainer *Bytes //TLV-E [73][20]
+	SorTransparentContainer []byte //O: TLV-E [73][20]
 }
 
 func (msg *RegistrationComplete) encode() (wire []byte, err error) {
@@ -17,9 +17,10 @@ func (msg *RegistrationComplete) encode() (wire []byte, err error) {
 		}
 	}()
 	var buf []byte
-	if msg.SorTransparentContainer != nil {
-		// TLV-E[20]
-		if buf, err = encodeLV(true, uint16(17), uint16(17), msg.SorTransparentContainer); err != nil {
+	// O: TLV-E[20]
+	if len(msg.SorTransparentContainer) > 0 {
+		tmp := newBytesEncoder(msg.SorTransparentContainer)
+		if buf, err = encodeLV(true, uint16(17), uint16(17), tmp); err != nil {
 			err = nasError("encoding SorTransparentContainer [O TLV-E 20]", err)
 			return
 		}
@@ -42,15 +43,15 @@ func (msg *RegistrationComplete) decodeBody(wire []byte) (err error) {
 	for offset < wireLen {
 		iei := getIei(wire[offset])
 		switch iei {
-		case 0x73: //TLV-E[20]
+		case 0x73: //O: TLV-E[20]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(17), uint16(17), v); err != nil {
 				err = nasError("decoding SorTransparentContainer [O TLV-E 20]", err)
 				return
 			}
 			offset += consumed
-			msg.SorTransparentContainer = v
+			msg.SorTransparentContainer = []byte(*v)
 		default:
 			err = ErrUnknownIei
 			return

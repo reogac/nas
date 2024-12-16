@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.948889**/
+/**generated time: 2024-12-16 16:36:18.698499**/
 
 package nas
 
@@ -7,8 +7,8 @@ package nas
  ******************************************************/
 type PduSessionModificationCommandReject struct {
 	SmHeader
-	GsmCause                             Uint8                                 //V [1]
-	ExtendedProtocolConfigurationOptions *ExtendedProtocolConfigurationOptions //TLV-E [7B][4-65538]
+	GsmCause                             uint8                                 //M: V [1]
+	ExtendedProtocolConfigurationOptions *ExtendedProtocolConfigurationOptions //O: TLV-E [7B][4-65538]
 }
 
 func (msg *PduSessionModificationCommandReject) encode() (wire []byte, err error) {
@@ -18,11 +18,11 @@ func (msg *PduSessionModificationCommandReject) encode() (wire []byte, err error
 		}
 	}()
 	var buf []byte
-	// V[1]
+	// M: V[1]
 	wire = append(wire, uint8(msg.GsmCause))
 
+	// O: TLV-E[4-65538]
 	if msg.ExtendedProtocolConfigurationOptions != nil {
-		// TLV-E[4-65538]
 		if buf, err = encodeLV(true, uint16(1), uint16(0), msg.ExtendedProtocolConfigurationOptions); err != nil {
 			err = nasError("encoding ExtendedProtocolConfigurationOptions [O TLV-E 4-65538]", err)
 			return
@@ -43,20 +43,20 @@ func (msg *PduSessionModificationCommandReject) decodeBody(wire []byte) (err err
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0
-	// V[1]
+	// M V[1]
 	if offset+1 > wireLen {
 		err = nasError("decoding GsmCause [M V 1]", ErrIncomplete)
 		return
 	}
-	msg.GsmCause = Uint8(wire[offset])
+	msg.GsmCause = wire[offset]
 	offset++
 
 	for offset < wireLen {
 		iei := getIei(wire[offset])
 		switch iei {
-		case 0x7B: //TLV-E[4-65538]
+		case 0x7B: //O: TLV-E[4-65538]
 			offset++ //consume IEI
-			v := &ExtendedProtocolConfigurationOptions{}
+			v := new(ExtendedProtocolConfigurationOptions)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), v); err != nil {
 				err = nasError("decoding ExtendedProtocolConfigurationOptions [O TLV-E 4-65538]", err)
 				return

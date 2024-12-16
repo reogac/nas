@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.949537**/
+/**generated time: 2024-12-16 16:36:18.698975**/
 
 package nas
 
@@ -7,7 +7,7 @@ package nas
  ******************************************************/
 type GsmStatus struct {
 	SmHeader
-	GsmCause Uint8 //V [1]
+	GsmCause uint8 //M: V [1]
 }
 
 func (msg *GsmStatus) encode() (wire []byte, err error) {
@@ -16,7 +16,7 @@ func (msg *GsmStatus) encode() (wire []byte, err error) {
 			err = nasError("encoding GsmStatus", err)
 		}
 	}()
-	// V[1]
+	// M: V[1]
 	wire = append(wire, uint8(msg.GsmCause))
 
 	msg.msgType = GsmStatusMsgType //set message type to 5GSM STATUS
@@ -31,12 +31,12 @@ func (msg *GsmStatus) decodeBody(wire []byte) (err error) {
 	}()
 	offset := 0
 	wireLen := len(wire)
-	// V[1]
+	// M V[1]
 	if offset+1 > wireLen {
 		err = nasError("decoding GsmCause [M V 1]", ErrIncomplete)
 		return
 	}
-	msg.GsmCause = Uint8(wire[offset])
+	msg.GsmCause = wire[offset]
 	offset++
 
 	return

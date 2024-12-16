@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.942610**/
+/**generated time: 2024-12-16 16:36:18.694005**/
 
 package nas
 
@@ -7,40 +7,40 @@ package nas
  ******************************************************/
 type ConfigurationUpdateCommand struct {
 	MmHeader
-	ConfigurationUpdateIndication            *Uint8                    //TV [D-][1]
-	Guti                                     *MobileIdentity           //TLV-E [77][14]
-	TaiList                                  *TrackingAreaIdentityList //TLV [54][9-114]
-	AllowedNssai                             *Nssai                    //TLV [15][4-74]
-	ServiceAreaList                          *ServiceAreaList          //TLV [27][6-114]
-	FullNameForNetwork                       *NetworkName              //TLV [43][3-n]
-	ShortNameForNetwork                      *NetworkName              //TLV [45][3-n]
-	LocalTimeZone                            *TimeZone                 //TV [46][2]
-	UniversalTimeAndLocalTimeZone            *Bytes                    //TV [47][8]
-	NetworkDaylightSavingTime                *Uint8                    //TLV [49][3]
-	LadnInformation                          *LadnInformation          //TLV-E [79][3-1715]
-	MicoIndication                           *Uint8                    //TV [B-][1]
-	NetworkSlicingIndication                 *Uint8                    //TV [9-][1]
-	ConfiguredNssai                          *Nssai                    //TLV [31][4-146]
-	RejectedNssai                            *RejectedNssai            //TLV [11][4-42]
-	OperatorDefinedAccessCategoryDefinitions *Bytes                    //TLV-E [76][3-8323]
-	SmsIndication                            *Uint8                    //TV [F-][1]
-	T3447Value                               *GprsTimer3               //TLV [6C][3]
-	CagInformationList                       *Bytes                    //TLV-E [75][3-n]
-	UeRadioCapabilityId                      *Bytes                    //TLV [67][3-n]
-	UeRadioCapabilityIdDeletionIndication    *Uint8                    //TV [A-][1]
-	RegistrationResult                       *RegistrationResult       //TLV [44][3]
-	TruncatedSTmsiConfiguration              *Uint8                    //TLV [1B][3]
-	AdditionalConfigurationIndication        *Uint8                    //TV [C-][1]
-	ExtendedRejectedNssai                    *Bytes                    //TLV [68][5-90]
-	ServiceLevelAaContainer                  *Bytes                    //TLV-E [72][6-n]
-	NssrgInformation                         *Bytes                    //TLV-E [70][7-4099]
-	DisasterRoamingWaitRange                 *Uint16                   //TLV [14][4]
-	DisasterReturnWaitRange                  *Uint16                   //TLV [2C][4]
-	ListOfPlmnsToBeUsedInDisasterCondition   *Bytes                    //TLV [13][2-n]
-	ExtendedCagInformationList               *Bytes                    //TLV-E [71][3-n]
-	UpdatedPeipsAssistanceInformation        *Bytes                    //TLV [1F][3-n]
-	NsagInformation                          *Bytes                    //TLV-E [73][9-3143]
-	PriorityIndicator                        *Uint8                    //TV [E-][1]
+	ConfigurationUpdateIndication            *uint8                    //O: TV [D-][1]
+	Guti                                     *MobileIdentity           //O: TLV-E [77][14]
+	TaiList                                  *TrackingAreaIdentityList //O: TLV [54][9-114]
+	AllowedNssai                             *Nssai                    //O: TLV [15][4-74]
+	ServiceAreaList                          *ServiceAreaList          //O: TLV [27][6-114]
+	FullNameForNetwork                       *NetworkName              //O: TLV [43][3-n]
+	ShortNameForNetwork                      *NetworkName              //O: TLV [45][3-n]
+	LocalTimeZone                            *TimeZone                 //O: TV [46][2]
+	UniversalTimeAndLocalTimeZone            []byte                    //O: TV [47][8]
+	NetworkDaylightSavingTime                *uint8                    //O: TLV [49][3]
+	LadnInformation                          *LadnInformation          //O: TLV-E [79][3-1715]
+	MicoIndication                           *uint8                    //O: TV [B-][1]
+	NetworkSlicingIndication                 *uint8                    //O: TV [9-][1]
+	ConfiguredNssai                          *Nssai                    //O: TLV [31][4-146]
+	RejectedNssai                            *RejectedNssai            //O: TLV [11][4-42]
+	OperatorDefinedAccessCategoryDefinitions []byte                    //O: TLV-E [76][3-8323]
+	SmsIndication                            *uint8                    //O: TV [F-][1]
+	T3447Value                               *GprsTimer3               //O: TLV [6C][3]
+	CagInformationList                       []byte                    //O: TLV-E [75][3-n]
+	UeRadioCapabilityId                      []byte                    //O: TLV [67][3-n]
+	UeRadioCapabilityIdDeletionIndication    *uint8                    //O: TV [A-][1]
+	RegistrationResult                       *RegistrationResult       //O: TLV [44][3]
+	TruncatedSTmsiConfiguration              *uint8                    //O: TLV [1B][3]
+	AdditionalConfigurationIndication        *uint8                    //O: TV [C-][1]
+	ExtendedRejectedNssai                    []byte                    //O: TLV [68][5-90]
+	ServiceLevelAaContainer                  []byte                    //O: TLV-E [72][6-n]
+	NssrgInformation                         []byte                    //O: TLV-E [70][7-4099]
+	DisasterRoamingWaitRange                 *uint16                   //O: TLV [14][4]
+	DisasterReturnWaitRange                  *uint16                   //O: TLV [2C][4]
+	ListOfPlmnsToBeUsedInDisasterCondition   []byte                    //O: TLV [13][2-n]
+	ExtendedCagInformationList               []byte                    //O: TLV-E [71][3-n]
+	UpdatedPeipsAssistanceInformation        []byte                    //O: TLV [1F][3-n]
+	NsagInformation                          []byte                    //O: TLV-E [73][9-3143]
+	PriorityIndicator                        *uint8                    //O: TV [E-][1]
 }
 
 func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
@@ -50,14 +50,14 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 		}
 	}()
 	var buf []byte
+	// O: TV[1]
 	if msg.ConfigurationUpdateIndication != nil {
-		// TV[1]
 		// fill lefthalf with IEI and righthalf with value
 		wire = append(wire, (0x0D<<4)|(uint8(*msg.ConfigurationUpdateIndication)&0x0f))
 	}
 
+	// O: TLV-E[14]
 	if msg.Guti != nil {
-		// TLV-E[14]
 		if buf, err = encodeLV(true, uint16(11), uint16(11), msg.Guti); err != nil {
 			err = nasError("encoding Guti [O TLV-E 14]", err)
 			return
@@ -65,8 +65,8 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x77), buf...)
 	}
 
+	// O: TLV[9-114]
 	if msg.TaiList != nil {
-		// TLV[9-114]
 		if buf, err = encodeLV(false, uint16(7), uint16(112), msg.TaiList); err != nil {
 			err = nasError("encoding TaiList [O TLV 9-114]", err)
 			return
@@ -74,8 +74,8 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x54), buf...)
 	}
 
+	// O: TLV[4-74]
 	if msg.AllowedNssai != nil {
-		// TLV[4-74]
 		if buf, err = encodeLV(false, uint16(2), uint16(72), msg.AllowedNssai); err != nil {
 			err = nasError("encoding AllowedNssai [O TLV 4-74]", err)
 			return
@@ -83,8 +83,8 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x15), buf...)
 	}
 
+	// O: TLV[6-114]
 	if msg.ServiceAreaList != nil {
-		// TLV[6-114]
 		if buf, err = encodeLV(false, uint16(4), uint16(112), msg.ServiceAreaList); err != nil {
 			err = nasError("encoding ServiceAreaList [O TLV 6-114]", err)
 			return
@@ -92,8 +92,8 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x27), buf...)
 	}
 
+	// O: TLV[3-n]
 	if msg.FullNameForNetwork != nil {
-		// TLV[3-n]
 		if buf, err = encodeLV(false, uint16(1), uint16(0), msg.FullNameForNetwork); err != nil {
 			err = nasError("encoding FullNameForNetwork [O TLV 3-n]", err)
 			return
@@ -101,8 +101,8 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x43), buf...)
 	}
 
+	// O: TLV[3-n]
 	if msg.ShortNameForNetwork != nil {
-		// TLV[3-n]
 		if buf, err = encodeLV(false, uint16(1), uint16(0), msg.ShortNameForNetwork); err != nil {
 			err = nasError("encoding ShortNameForNetwork [O TLV 3-n]", err)
 			return
@@ -110,8 +110,8 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x45), buf...)
 	}
 
+	// O: TV[2]
 	if msg.LocalTimeZone != nil {
-		// TV[2]
 		if buf, err = msg.LocalTimeZone.encode(); err != nil {
 			err = nasError("encoding LocalTimeZone [O TV 2]", err)
 			return
@@ -123,9 +123,10 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 		wire = append(wire, []byte{0x46, buf[0]}...)
 	}
 
-	if msg.UniversalTimeAndLocalTimeZone != nil {
-		// TV[8]
-		if buf, err = msg.UniversalTimeAndLocalTimeZone.encode(); err != nil {
+	// O: TV[8]
+	if len(msg.UniversalTimeAndLocalTimeZone) > 0 {
+		tmp := newBytesEncoder(msg.UniversalTimeAndLocalTimeZone)
+		if buf, err = tmp.encode(); err != nil {
 			err = nasError("encoding UniversalTimeAndLocalTimeZone [O TV 8]", err)
 			return
 		}
@@ -136,17 +137,18 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x47), buf...)
 	}
 
+	// O: TLV[3]
 	if msg.NetworkDaylightSavingTime != nil {
-		// TLV[3]
-		if buf, err = encodeLV(false, uint16(1), uint16(1), msg.NetworkDaylightSavingTime); err != nil {
+		tmp := newUint8Encoder(*msg.NetworkDaylightSavingTime)
+		if buf, err = encodeLV(false, uint16(1), uint16(1), tmp); err != nil {
 			err = nasError("encoding NetworkDaylightSavingTime [O TLV 3]", err)
 			return
 		}
 		wire = append(append(wire, 0x49), buf...)
 	}
 
+	// O: TLV-E[3-1715]
 	if msg.LadnInformation != nil {
-		// TLV-E[3-1715]
 		if buf, err = encodeLV(true, uint16(0), uint16(1712), msg.LadnInformation); err != nil {
 			err = nasError("encoding LadnInformation [O TLV-E 3-1715]", err)
 			return
@@ -154,20 +156,20 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x79), buf...)
 	}
 
+	// O: TV[1]
 	if msg.MicoIndication != nil {
-		// TV[1]
 		// fill lefthalf with IEI and righthalf with value
 		wire = append(wire, (0x0B<<4)|(uint8(*msg.MicoIndication)&0x0f))
 	}
 
+	// O: TV[1]
 	if msg.NetworkSlicingIndication != nil {
-		// TV[1]
 		// fill lefthalf with IEI and righthalf with value
 		wire = append(wire, (0x09<<4)|(uint8(*msg.NetworkSlicingIndication)&0x0f))
 	}
 
+	// O: TLV[4-146]
 	if msg.ConfiguredNssai != nil {
-		// TLV[4-146]
 		if buf, err = encodeLV(false, uint16(2), uint16(144), msg.ConfiguredNssai); err != nil {
 			err = nasError("encoding ConfiguredNssai [O TLV 4-146]", err)
 			return
@@ -175,8 +177,8 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x31), buf...)
 	}
 
+	// O: TLV[4-42]
 	if msg.RejectedNssai != nil {
-		// TLV[4-42]
 		if buf, err = encodeLV(false, uint16(2), uint16(40), msg.RejectedNssai); err != nil {
 			err = nasError("encoding RejectedNssai [O TLV 4-42]", err)
 			return
@@ -184,23 +186,24 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x11), buf...)
 	}
 
-	if msg.OperatorDefinedAccessCategoryDefinitions != nil {
-		// TLV-E[3-8323]
-		if buf, err = encodeLV(true, uint16(0), uint16(8320), msg.OperatorDefinedAccessCategoryDefinitions); err != nil {
+	// O: TLV-E[3-8323]
+	if len(msg.OperatorDefinedAccessCategoryDefinitions) > 0 {
+		tmp := newBytesEncoder(msg.OperatorDefinedAccessCategoryDefinitions)
+		if buf, err = encodeLV(true, uint16(0), uint16(8320), tmp); err != nil {
 			err = nasError("encoding OperatorDefinedAccessCategoryDefinitions [O TLV-E 3-8323]", err)
 			return
 		}
 		wire = append(append(wire, 0x76), buf...)
 	}
 
+	// O: TV[1]
 	if msg.SmsIndication != nil {
-		// TV[1]
 		// fill lefthalf with IEI and righthalf with value
 		wire = append(wire, (0x0F<<4)|(uint8(*msg.SmsIndication)&0x0f))
 	}
 
+	// O: TLV[3]
 	if msg.T3447Value != nil {
-		// TLV[3]
 		if buf, err = encodeLV(false, uint16(1), uint16(1), msg.T3447Value); err != nil {
 			err = nasError("encoding T3447Value [O TLV 3]", err)
 			return
@@ -208,32 +211,34 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x6C), buf...)
 	}
 
-	if msg.CagInformationList != nil {
-		// TLV-E[3-n]
-		if buf, err = encodeLV(true, uint16(0), uint16(0), msg.CagInformationList); err != nil {
+	// O: TLV-E[3-n]
+	if len(msg.CagInformationList) > 0 {
+		tmp := newBytesEncoder(msg.CagInformationList)
+		if buf, err = encodeLV(true, uint16(0), uint16(0), tmp); err != nil {
 			err = nasError("encoding CagInformationList [O TLV-E 3-n]", err)
 			return
 		}
 		wire = append(append(wire, 0x75), buf...)
 	}
 
-	if msg.UeRadioCapabilityId != nil {
-		// TLV[3-n]
-		if buf, err = encodeLV(false, uint16(1), uint16(0), msg.UeRadioCapabilityId); err != nil {
+	// O: TLV[3-n]
+	if len(msg.UeRadioCapabilityId) > 0 {
+		tmp := newBytesEncoder(msg.UeRadioCapabilityId)
+		if buf, err = encodeLV(false, uint16(1), uint16(0), tmp); err != nil {
 			err = nasError("encoding UeRadioCapabilityId [O TLV 3-n]", err)
 			return
 		}
 		wire = append(append(wire, 0x67), buf...)
 	}
 
+	// O: TV[1]
 	if msg.UeRadioCapabilityIdDeletionIndication != nil {
-		// TV[1]
 		// fill lefthalf with IEI and righthalf with value
 		wire = append(wire, (0x0A<<4)|(uint8(*msg.UeRadioCapabilityIdDeletionIndication)&0x0f))
 	}
 
+	// O: TLV[3]
 	if msg.RegistrationResult != nil {
-		// TLV[3]
 		if buf, err = encodeLV(false, uint16(1), uint16(1), msg.RegistrationResult); err != nil {
 			err = nasError("encoding RegistrationResult [O TLV 3]", err)
 			return
@@ -241,104 +246,114 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x44), buf...)
 	}
 
+	// O: TLV[3]
 	if msg.TruncatedSTmsiConfiguration != nil {
-		// TLV[3]
-		if buf, err = encodeLV(false, uint16(1), uint16(1), msg.TruncatedSTmsiConfiguration); err != nil {
+		tmp := newUint8Encoder(*msg.TruncatedSTmsiConfiguration)
+		if buf, err = encodeLV(false, uint16(1), uint16(1), tmp); err != nil {
 			err = nasError("encoding TruncatedSTmsiConfiguration [O TLV 3]", err)
 			return
 		}
 		wire = append(append(wire, 0x1B), buf...)
 	}
 
+	// O: TV[1]
 	if msg.AdditionalConfigurationIndication != nil {
-		// TV[1]
 		// fill lefthalf with IEI and righthalf with value
 		wire = append(wire, (0x0C<<4)|(uint8(*msg.AdditionalConfigurationIndication)&0x0f))
 	}
 
-	if msg.ExtendedRejectedNssai != nil {
-		// TLV[5-90]
-		if buf, err = encodeLV(false, uint16(3), uint16(88), msg.ExtendedRejectedNssai); err != nil {
+	// O: TLV[5-90]
+	if len(msg.ExtendedRejectedNssai) > 0 {
+		tmp := newBytesEncoder(msg.ExtendedRejectedNssai)
+		if buf, err = encodeLV(false, uint16(3), uint16(88), tmp); err != nil {
 			err = nasError("encoding ExtendedRejectedNssai [O TLV 5-90]", err)
 			return
 		}
 		wire = append(append(wire, 0x68), buf...)
 	}
 
-	if msg.ServiceLevelAaContainer != nil {
-		// TLV-E[6-n]
-		if buf, err = encodeLV(true, uint16(3), uint16(0), msg.ServiceLevelAaContainer); err != nil {
+	// O: TLV-E[6-n]
+	if len(msg.ServiceLevelAaContainer) > 0 {
+		tmp := newBytesEncoder(msg.ServiceLevelAaContainer)
+		if buf, err = encodeLV(true, uint16(3), uint16(0), tmp); err != nil {
 			err = nasError("encoding ServiceLevelAaContainer [O TLV-E 6-n]", err)
 			return
 		}
 		wire = append(append(wire, 0x72), buf...)
 	}
 
-	if msg.NssrgInformation != nil {
-		// TLV-E[7-4099]
-		if buf, err = encodeLV(true, uint16(4), uint16(4096), msg.NssrgInformation); err != nil {
+	// O: TLV-E[7-4099]
+	if len(msg.NssrgInformation) > 0 {
+		tmp := newBytesEncoder(msg.NssrgInformation)
+		if buf, err = encodeLV(true, uint16(4), uint16(4096), tmp); err != nil {
 			err = nasError("encoding NssrgInformation [O TLV-E 7-4099]", err)
 			return
 		}
 		wire = append(append(wire, 0x70), buf...)
 	}
 
+	// O: TLV[4]
 	if msg.DisasterRoamingWaitRange != nil {
-		// TLV[4]
-		if buf, err = encodeLV(false, uint16(2), uint16(2), msg.DisasterRoamingWaitRange); err != nil {
+		tmp := newUint16Encoder(*msg.DisasterRoamingWaitRange)
+		if buf, err = encodeLV(false, uint16(2), uint16(2), tmp); err != nil {
 			err = nasError("encoding DisasterRoamingWaitRange [O TLV 4]", err)
 			return
 		}
 		wire = append(append(wire, 0x14), buf...)
 	}
 
+	// O: TLV[4]
 	if msg.DisasterReturnWaitRange != nil {
-		// TLV[4]
-		if buf, err = encodeLV(false, uint16(2), uint16(2), msg.DisasterReturnWaitRange); err != nil {
+		tmp := newUint16Encoder(*msg.DisasterReturnWaitRange)
+		if buf, err = encodeLV(false, uint16(2), uint16(2), tmp); err != nil {
 			err = nasError("encoding DisasterReturnWaitRange [O TLV 4]", err)
 			return
 		}
 		wire = append(append(wire, 0x2C), buf...)
 	}
 
-	if msg.ListOfPlmnsToBeUsedInDisasterCondition != nil {
-		// TLV[2-n]
-		if buf, err = encodeLV(false, uint16(0), uint16(0), msg.ListOfPlmnsToBeUsedInDisasterCondition); err != nil {
+	// O: TLV[2-n]
+	if len(msg.ListOfPlmnsToBeUsedInDisasterCondition) > 0 {
+		tmp := newBytesEncoder(msg.ListOfPlmnsToBeUsedInDisasterCondition)
+		if buf, err = encodeLV(false, uint16(0), uint16(0), tmp); err != nil {
 			err = nasError("encoding ListOfPlmnsToBeUsedInDisasterCondition [O TLV 2-n]", err)
 			return
 		}
 		wire = append(append(wire, 0x13), buf...)
 	}
 
-	if msg.ExtendedCagInformationList != nil {
-		// TLV-E[3-n]
-		if buf, err = encodeLV(true, uint16(0), uint16(0), msg.ExtendedCagInformationList); err != nil {
+	// O: TLV-E[3-n]
+	if len(msg.ExtendedCagInformationList) > 0 {
+		tmp := newBytesEncoder(msg.ExtendedCagInformationList)
+		if buf, err = encodeLV(true, uint16(0), uint16(0), tmp); err != nil {
 			err = nasError("encoding ExtendedCagInformationList [O TLV-E 3-n]", err)
 			return
 		}
 		wire = append(append(wire, 0x71), buf...)
 	}
 
-	if msg.UpdatedPeipsAssistanceInformation != nil {
-		// TLV[3-n]
-		if buf, err = encodeLV(false, uint16(1), uint16(0), msg.UpdatedPeipsAssistanceInformation); err != nil {
+	// O: TLV[3-n]
+	if len(msg.UpdatedPeipsAssistanceInformation) > 0 {
+		tmp := newBytesEncoder(msg.UpdatedPeipsAssistanceInformation)
+		if buf, err = encodeLV(false, uint16(1), uint16(0), tmp); err != nil {
 			err = nasError("encoding UpdatedPeipsAssistanceInformation [O TLV 3-n]", err)
 			return
 		}
 		wire = append(append(wire, 0x1F), buf...)
 	}
 
-	if msg.NsagInformation != nil {
-		// TLV-E[9-3143]
-		if buf, err = encodeLV(true, uint16(6), uint16(3140), msg.NsagInformation); err != nil {
+	// O: TLV-E[9-3143]
+	if len(msg.NsagInformation) > 0 {
+		tmp := newBytesEncoder(msg.NsagInformation)
+		if buf, err = encodeLV(true, uint16(6), uint16(3140), tmp); err != nil {
 			err = nasError("encoding NsagInformation [O TLV-E 9-3143]", err)
 			return
 		}
 		wire = append(append(wire, 0x73), buf...)
 	}
 
+	// O: TV[1]
 	if msg.PriorityIndicator != nil {
-		// TV[1]
 		// fill lefthalf with IEI and righthalf with value
 		wire = append(wire, (0x0E<<4)|(uint8(*msg.PriorityIndicator)&0x0f))
 	}
@@ -359,70 +374,70 @@ func (msg *ConfigurationUpdateCommand) decodeBody(wire []byte) (err error) {
 	for offset < wireLen {
 		iei := getIei(wire[offset])
 		switch iei {
-		case 0x0D: //TV[1]
-			msg.ConfigurationUpdateIndication = new(Uint8)
-			*msg.ConfigurationUpdateIndication = Uint8(wire[offset] & 0x0f) //take right 1/2
+		case 0x0D: //O: TV[1]
+			msg.ConfigurationUpdateIndication = new(uint8)
+			*msg.ConfigurationUpdateIndication = wire[offset] & 0x0f //take right 1/2
 			offset++
-		case 0x77: //TLV-E[14]
+		case 0x77: //O: TLV-E[14]
 			offset++ //consume IEI
-			v := &MobileIdentity{}
+			v := new(MobileIdentity)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(11), uint16(11), v); err != nil {
 				err = nasError("decoding Guti [O TLV-E 14]", err)
 				return
 			}
 			offset += consumed
 			msg.Guti = v
-		case 0x54: //TLV[9-114]
+		case 0x54: //O: TLV[9-114]
 			offset++ //consume IEI
-			v := &TrackingAreaIdentityList{}
+			v := new(TrackingAreaIdentityList)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(7), uint16(112), v); err != nil {
 				err = nasError("decoding TaiList [O TLV 9-114]", err)
 				return
 			}
 			offset += consumed
 			msg.TaiList = v
-		case 0x15: //TLV[4-74]
+		case 0x15: //O: TLV[4-74]
 			offset++ //consume IEI
-			v := &Nssai{}
+			v := new(Nssai)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(72), v); err != nil {
 				err = nasError("decoding AllowedNssai [O TLV 4-74]", err)
 				return
 			}
 			offset += consumed
 			msg.AllowedNssai = v
-		case 0x27: //TLV[6-114]
+		case 0x27: //O: TLV[6-114]
 			offset++ //consume IEI
-			v := &ServiceAreaList{}
+			v := new(ServiceAreaList)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(4), uint16(112), v); err != nil {
 				err = nasError("decoding ServiceAreaList [O TLV 6-114]", err)
 				return
 			}
 			offset += consumed
 			msg.ServiceAreaList = v
-		case 0x43: //TLV[3-n]
+		case 0x43: //O: TLV[3-n]
 			offset++ //consume IEI
-			v := &NetworkName{}
+			v := new(NetworkName)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(0), v); err != nil {
 				err = nasError("decoding FullNameForNetwork [O TLV 3-n]", err)
 				return
 			}
 			offset += consumed
 			msg.FullNameForNetwork = v
-		case 0x45: //TLV[3-n]
+		case 0x45: //O: TLV[3-n]
 			offset++ //consume IEI
-			v := &NetworkName{}
+			v := new(NetworkName)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(0), v); err != nil {
 				err = nasError("decoding ShortNameForNetwork [O TLV 3-n]", err)
 				return
 			}
 			offset += consumed
 			msg.ShortNameForNetwork = v
-		case 0x46: //TV[2]
+		case 0x46: //O: TV[2]
 			if offset+2 > wireLen {
 				err = nasError("decoding LocalTimeZone [O TV 2]", ErrIncomplete)
 				return
 			}
-			v := &TimeZone{}
+			v := new(TimeZone)
 			offset++ //consume IEI
 			if err = v.decode(wire[offset : offset+1]); err != nil {
 				err = nasError("decoding LocalTimeZone [O TV 2]", err)
@@ -430,214 +445,214 @@ func (msg *ConfigurationUpdateCommand) decodeBody(wire []byte) (err error) {
 			}
 			msg.LocalTimeZone = v
 			offset++
-		case 0x47: //TV[8]
+		case 0x47: //O: TV[8]
 			if offset+8 > wireLen {
 				err = nasError("decoding UniversalTimeAndLocalTimeZone [O TV 8]", ErrIncomplete)
 				return
 			}
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if err = v.decode(wire[offset : offset+7]); err != nil {
 				err = nasError("decoding UniversalTimeAndLocalTimeZone [O TV 8]", err)
 				return
 			}
-			msg.UniversalTimeAndLocalTimeZone = v
+			msg.UniversalTimeAndLocalTimeZone = []byte(*v)
 			offset += 7
 
-		case 0x49: //TLV[3]
+		case 0x49: //O: TLV[3]
 			offset++ //consume IEI
-			v := new(Uint8)
+			v := new(uint8Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
 				err = nasError("decoding NetworkDaylightSavingTime [O TLV 3]", err)
 				return
 			}
 			offset += consumed
-			msg.NetworkDaylightSavingTime = v
-		case 0x79: //TLV-E[3-1715]
+			msg.NetworkDaylightSavingTime = (*uint8)(v)
+		case 0x79: //O: TLV-E[3-1715]
 			offset++ //consume IEI
-			v := &LadnInformation{}
+			v := new(LadnInformation)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(0), uint16(1712), v); err != nil {
 				err = nasError("decoding LadnInformation [O TLV-E 3-1715]", err)
 				return
 			}
 			offset += consumed
 			msg.LadnInformation = v
-		case 0x0B: //TV[1]
-			msg.MicoIndication = new(Uint8)
-			*msg.MicoIndication = Uint8(wire[offset] & 0x0f) //take right 1/2
+		case 0x0B: //O: TV[1]
+			msg.MicoIndication = new(uint8)
+			*msg.MicoIndication = wire[offset] & 0x0f //take right 1/2
 			offset++
-		case 0x09: //TV[1]
-			msg.NetworkSlicingIndication = new(Uint8)
-			*msg.NetworkSlicingIndication = Uint8(wire[offset] & 0x0f) //take right 1/2
+		case 0x09: //O: TV[1]
+			msg.NetworkSlicingIndication = new(uint8)
+			*msg.NetworkSlicingIndication = wire[offset] & 0x0f //take right 1/2
 			offset++
-		case 0x31: //TLV[4-146]
+		case 0x31: //O: TLV[4-146]
 			offset++ //consume IEI
-			v := &Nssai{}
+			v := new(Nssai)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(144), v); err != nil {
 				err = nasError("decoding ConfiguredNssai [O TLV 4-146]", err)
 				return
 			}
 			offset += consumed
 			msg.ConfiguredNssai = v
-		case 0x11: //TLV[4-42]
+		case 0x11: //O: TLV[4-42]
 			offset++ //consume IEI
-			v := &RejectedNssai{}
+			v := new(RejectedNssai)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(40), v); err != nil {
 				err = nasError("decoding RejectedNssai [O TLV 4-42]", err)
 				return
 			}
 			offset += consumed
 			msg.RejectedNssai = v
-		case 0x76: //TLV-E[3-8323]
+		case 0x76: //O: TLV-E[3-8323]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(0), uint16(8320), v); err != nil {
 				err = nasError("decoding OperatorDefinedAccessCategoryDefinitions [O TLV-E 3-8323]", err)
 				return
 			}
 			offset += consumed
-			msg.OperatorDefinedAccessCategoryDefinitions = v
-		case 0x0F: //TV[1]
-			msg.SmsIndication = new(Uint8)
-			*msg.SmsIndication = Uint8(wire[offset] & 0x0f) //take right 1/2
+			msg.OperatorDefinedAccessCategoryDefinitions = []byte(*v)
+		case 0x0F: //O: TV[1]
+			msg.SmsIndication = new(uint8)
+			*msg.SmsIndication = wire[offset] & 0x0f //take right 1/2
 			offset++
-		case 0x6C: //TLV[3]
+		case 0x6C: //O: TLV[3]
 			offset++ //consume IEI
-			v := &GprsTimer3{}
+			v := new(GprsTimer3)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
 				err = nasError("decoding T3447Value [O TLV 3]", err)
 				return
 			}
 			offset += consumed
 			msg.T3447Value = v
-		case 0x75: //TLV-E[3-n]
+		case 0x75: //O: TLV-E[3-n]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(0), uint16(0), v); err != nil {
 				err = nasError("decoding CagInformationList [O TLV-E 3-n]", err)
 				return
 			}
 			offset += consumed
-			msg.CagInformationList = v
-		case 0x67: //TLV[3-n]
+			msg.CagInformationList = []byte(*v)
+		case 0x67: //O: TLV[3-n]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(0), v); err != nil {
 				err = nasError("decoding UeRadioCapabilityId [O TLV 3-n]", err)
 				return
 			}
 			offset += consumed
-			msg.UeRadioCapabilityId = v
-		case 0x0A: //TV[1]
-			msg.UeRadioCapabilityIdDeletionIndication = new(Uint8)
-			*msg.UeRadioCapabilityIdDeletionIndication = Uint8(wire[offset] & 0x0f) //take right 1/2
+			msg.UeRadioCapabilityId = []byte(*v)
+		case 0x0A: //O: TV[1]
+			msg.UeRadioCapabilityIdDeletionIndication = new(uint8)
+			*msg.UeRadioCapabilityIdDeletionIndication = wire[offset] & 0x0f //take right 1/2
 			offset++
-		case 0x44: //TLV[3]
+		case 0x44: //O: TLV[3]
 			offset++ //consume IEI
-			v := &RegistrationResult{}
+			v := new(RegistrationResult)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
 				err = nasError("decoding RegistrationResult [O TLV 3]", err)
 				return
 			}
 			offset += consumed
 			msg.RegistrationResult = v
-		case 0x1B: //TLV[3]
+		case 0x1B: //O: TLV[3]
 			offset++ //consume IEI
-			v := new(Uint8)
+			v := new(uint8Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
 				err = nasError("decoding TruncatedSTmsiConfiguration [O TLV 3]", err)
 				return
 			}
 			offset += consumed
-			msg.TruncatedSTmsiConfiguration = v
-		case 0x0C: //TV[1]
-			msg.AdditionalConfigurationIndication = new(Uint8)
-			*msg.AdditionalConfigurationIndication = Uint8(wire[offset] & 0x0f) //take right 1/2
+			msg.TruncatedSTmsiConfiguration = (*uint8)(v)
+		case 0x0C: //O: TV[1]
+			msg.AdditionalConfigurationIndication = new(uint8)
+			*msg.AdditionalConfigurationIndication = wire[offset] & 0x0f //take right 1/2
 			offset++
-		case 0x68: //TLV[5-90]
+		case 0x68: //O: TLV[5-90]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(3), uint16(88), v); err != nil {
 				err = nasError("decoding ExtendedRejectedNssai [O TLV 5-90]", err)
 				return
 			}
 			offset += consumed
-			msg.ExtendedRejectedNssai = v
-		case 0x72: //TLV-E[6-n]
+			msg.ExtendedRejectedNssai = []byte(*v)
+		case 0x72: //O: TLV-E[6-n]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(3), uint16(0), v); err != nil {
 				err = nasError("decoding ServiceLevelAaContainer [O TLV-E 6-n]", err)
 				return
 			}
 			offset += consumed
-			msg.ServiceLevelAaContainer = v
-		case 0x70: //TLV-E[7-4099]
+			msg.ServiceLevelAaContainer = []byte(*v)
+		case 0x70: //O: TLV-E[7-4099]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(4096), v); err != nil {
 				err = nasError("decoding NssrgInformation [O TLV-E 7-4099]", err)
 				return
 			}
 			offset += consumed
-			msg.NssrgInformation = v
-		case 0x14: //TLV[4]
+			msg.NssrgInformation = []byte(*v)
+		case 0x14: //O: TLV[4]
 			offset++ //consume IEI
-			v := new(Uint16)
+			v := new(uint16Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(2), v); err != nil {
 				err = nasError("decoding DisasterRoamingWaitRange [O TLV 4]", err)
 				return
 			}
 			offset += consumed
-			msg.DisasterRoamingWaitRange = v
-		case 0x2C: //TLV[4]
+			msg.DisasterRoamingWaitRange = (*uint16)(v)
+		case 0x2C: //O: TLV[4]
 			offset++ //consume IEI
-			v := new(Uint16)
+			v := new(uint16Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(2), v); err != nil {
 				err = nasError("decoding DisasterReturnWaitRange [O TLV 4]", err)
 				return
 			}
 			offset += consumed
-			msg.DisasterReturnWaitRange = v
-		case 0x13: //TLV[2-n]
+			msg.DisasterReturnWaitRange = (*uint16)(v)
+		case 0x13: //O: TLV[2-n]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(0), uint16(0), v); err != nil {
 				err = nasError("decoding ListOfPlmnsToBeUsedInDisasterCondition [O TLV 2-n]", err)
 				return
 			}
 			offset += consumed
-			msg.ListOfPlmnsToBeUsedInDisasterCondition = v
-		case 0x71: //TLV-E[3-n]
+			msg.ListOfPlmnsToBeUsedInDisasterCondition = []byte(*v)
+		case 0x71: //O: TLV-E[3-n]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(0), uint16(0), v); err != nil {
 				err = nasError("decoding ExtendedCagInformationList [O TLV-E 3-n]", err)
 				return
 			}
 			offset += consumed
-			msg.ExtendedCagInformationList = v
-		case 0x1F: //TLV[3-n]
+			msg.ExtendedCagInformationList = []byte(*v)
+		case 0x1F: //O: TLV[3-n]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(0), v); err != nil {
 				err = nasError("decoding UpdatedPeipsAssistanceInformation [O TLV 3-n]", err)
 				return
 			}
 			offset += consumed
-			msg.UpdatedPeipsAssistanceInformation = v
-		case 0x73: //TLV-E[9-3143]
+			msg.UpdatedPeipsAssistanceInformation = []byte(*v)
+		case 0x73: //O: TLV-E[9-3143]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(6), uint16(3140), v); err != nil {
 				err = nasError("decoding NsagInformation [O TLV-E 9-3143]", err)
 				return
 			}
 			offset += consumed
-			msg.NsagInformation = v
-		case 0x0E: //TV[1]
-			msg.PriorityIndicator = new(Uint8)
-			*msg.PriorityIndicator = Uint8(wire[offset] & 0x0f) //take right 1/2
+			msg.NsagInformation = []byte(*v)
+		case 0x0E: //O: TV[1]
+			msg.PriorityIndicator = new(uint8)
+			*msg.PriorityIndicator = wire[offset] & 0x0f //take right 1/2
 			offset++
 		default:
 			err = ErrUnknownIei

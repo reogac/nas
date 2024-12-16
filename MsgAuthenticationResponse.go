@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.943897**/
+/**generated time: 2024-12-16 16:36:18.694901**/
 
 package nas
 
@@ -7,8 +7,8 @@ package nas
  ******************************************************/
 type AuthenticationResponse struct {
 	MmHeader
-	AuthenticationResponseParameter *Bytes //TLV [2D][18]
-	EapMessage                      *Bytes //TLV-E [78][7-1503]
+	AuthenticationResponseParameter []byte //O: TLV [2D][18]
+	EapMessage                      []byte //O: TLV-E [78][7-1503]
 }
 
 func (msg *AuthenticationResponse) encode() (wire []byte, err error) {
@@ -18,18 +18,20 @@ func (msg *AuthenticationResponse) encode() (wire []byte, err error) {
 		}
 	}()
 	var buf []byte
-	if msg.AuthenticationResponseParameter != nil {
-		// TLV[18]
-		if buf, err = encodeLV(false, uint16(16), uint16(16), msg.AuthenticationResponseParameter); err != nil {
+	// O: TLV[18]
+	if len(msg.AuthenticationResponseParameter) > 0 {
+		tmp := newBytesEncoder(msg.AuthenticationResponseParameter)
+		if buf, err = encodeLV(false, uint16(16), uint16(16), tmp); err != nil {
 			err = nasError("encoding AuthenticationResponseParameter [O TLV 18]", err)
 			return
 		}
 		wire = append(append(wire, 0x2D), buf...)
 	}
 
-	if msg.EapMessage != nil {
-		// TLV-E[7-1503]
-		if buf, err = encodeLV(true, uint16(4), uint16(1500), msg.EapMessage); err != nil {
+	// O: TLV-E[7-1503]
+	if len(msg.EapMessage) > 0 {
+		tmp := newBytesEncoder(msg.EapMessage)
+		if buf, err = encodeLV(true, uint16(4), uint16(1500), tmp); err != nil {
 			err = nasError("encoding EapMessage [O TLV-E 7-1503]", err)
 			return
 		}
@@ -52,24 +54,24 @@ func (msg *AuthenticationResponse) decodeBody(wire []byte) (err error) {
 	for offset < wireLen {
 		iei := getIei(wire[offset])
 		switch iei {
-		case 0x2D: //TLV[18]
+		case 0x2D: //O: TLV[18]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(16), uint16(16), v); err != nil {
 				err = nasError("decoding AuthenticationResponseParameter [O TLV 18]", err)
 				return
 			}
 			offset += consumed
-			msg.AuthenticationResponseParameter = v
-		case 0x78: //TLV-E[7-1503]
+			msg.AuthenticationResponseParameter = []byte(*v)
+		case 0x78: //O: TLV-E[7-1503]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(1500), v); err != nil {
 				err = nasError("decoding EapMessage [O TLV-E 7-1503]", err)
 				return
 			}
 			offset += consumed
-			msg.EapMessage = v
+			msg.EapMessage = []byte(*v)
 		default:
 			err = ErrUnknownIei
 			return

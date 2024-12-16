@@ -4,64 +4,63 @@ import (
 	"encoding/binary"
 )
 
-type Bytes []byte
+type uint8Encoder uint8
 
-func NewBytes(bytes []byte) *Bytes {
-	v := Bytes(make([]byte, len(bytes)))
-	copy(v[:], bytes)
-	return &v
+func newUint8Encoder(v uint8) *uint8Encoder {
+	ret := uint8Encoder(v)
+	return &ret
 }
-
-func (ie *Bytes) decode(wire []byte) error {
-	*ie = make([]byte, len(wire))
-	copy(*ie, wire)
-	return nil
-}
-
-func (ie *Bytes) encode() ([]byte, error) {
-	return []byte(*ie), nil
-}
-
-type Uint8 uint8
-
-func NewUint8(v uint8) *Uint8 {
-	tmp := Uint8(v)
-	return &tmp
-}
-
-func (ie *Uint8) Value() uint8 {
-	return uint8(*ie)
-}
-
-func (ie *Uint8) encode() ([]byte, error) {
+func (ie *uint8Encoder) encode() ([]byte, error) {
 	return []byte{uint8(*ie)}, nil
 }
 
-func (ie *Uint8) decode(wire []byte) error {
+type uint8Decoder uint8
+
+func (ie *uint8Decoder) decode(wire []byte) error {
 	if len(wire) != 1 {
 		return ErrInvalidSize
 	}
-	*ie = Uint8(wire[0])
+	*ie = uint8Decoder(wire[0])
 	return nil
 }
 
-type Uint16 uint16
+type uint16Encoder uint16
 
-func NewUint16(v uint16) *Uint16 {
-	tmp := Uint16(v)
-	return &tmp
+func newUint16Encoder(v uint16) *uint16Encoder {
+	ret := uint16Encoder(v)
+	return &ret
 }
-
-func (ie *Uint16) encode() ([]byte, error) {
+func (ie *uint16Encoder) encode() ([]byte, error) {
 	var wire [2]byte
 	binary.BigEndian.PutUint16(wire[:], uint16(*ie))
 	return wire[:], nil
 }
 
-func (ie *Uint16) decode(wire []byte) error {
+type uint16Decoder uint16
+
+func (ie *uint16Decoder) decode(wire []byte) error {
 	if len(wire) != 2 {
 		return ErrInvalidSize
 	}
-	*ie = Uint16(binary.BigEndian.Uint16(wire))
+	*ie = uint16Decoder(binary.BigEndian.Uint16(wire))
+	return nil
+}
+
+type bytesEncoder []byte
+
+func newBytesEncoder(dat []byte) *bytesEncoder {
+	ret := bytesEncoder(dat)
+	return &ret
+}
+
+func (ie *bytesEncoder) encode() ([]byte, error) {
+	return []byte(*ie), nil
+}
+
+type bytesDecoder []byte
+
+func (ie *bytesDecoder) decode(wire []byte) error {
+	*ie = make([]byte, len(wire))
+	copy(*ie, wire)
 	return nil
 }

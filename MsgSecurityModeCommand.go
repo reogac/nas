@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.944418**/
+/**generated time: 2024-12-16 16:36:18.695300**/
 
 package nas
 
@@ -7,15 +7,15 @@ package nas
  ******************************************************/
 type SecurityModeCommand struct {
 	MmHeader
-	SelectedNasSecurityAlgorithms    SecurityAlgorithms             //V [1]
-	Ngksi                            KeySetIdentifier               //V [1/2]
-	ReplayedUeSecurityCapabilities   UeSecurityCapability           //LV [3-9]
-	ImeisvRequest                    *Uint8                         //TV [E-][1]
-	SelectedEpsNasSecurityAlgorithms *Uint8                         //TV [57][2]
-	AdditionalSecurityInformation    *AdditionalSecurityInformation //TLV [36][3]
-	EapMessage                       *Bytes                         //TLV-E [78][7-1503]
-	Abba                             *Bytes                         //TLV [38][4-n]
-	ReplayedS1UeSecurityCapabilities *Bytes                         //TLV [19][4-7]
+	SelectedNasSecurityAlgorithms    SecurityAlgorithms             //M: V [1]
+	Ngksi                            KeySetIdentifier               //M: V [1/2]
+	ReplayedUeSecurityCapabilities   UeSecurityCapability           //M: LV [3-9]
+	ImeisvRequest                    *uint8                         //O: TV [E-][1]
+	SelectedEpsNasSecurityAlgorithms *uint8                         //O: TV [57][2]
+	AdditionalSecurityInformation    *AdditionalSecurityInformation //O: TLV [36][3]
+	EapMessage                       []byte                         //O: TLV-E [78][7-1503]
+	Abba                             []byte                         //O: TLV [38][4-n]
+	ReplayedS1UeSecurityCapabilities []byte                         //O: TLV [19][4-7]
 }
 
 func (msg *SecurityModeCommand) encode() (wire []byte, err error) {
@@ -25,7 +25,7 @@ func (msg *SecurityModeCommand) encode() (wire []byte, err error) {
 		}
 	}()
 	var buf []byte
-	// V[1]
+	// M: V[1]
 	if buf, err = msg.SelectedNasSecurityAlgorithms.encode(); err != nil {
 		err = nasError("encoding SelectedNasSecurityAlgorithms [M V 1]", err)
 		return
@@ -36,7 +36,7 @@ func (msg *SecurityModeCommand) encode() (wire []byte, err error) {
 	}
 	wire = append(wire, buf[0])
 
-	// V[1/2]
+	// M: V[1/2]
 	if buf, err = msg.Ngksi.encode(); err != nil {
 		err = nasError("encoding Ngksi [M V 1/2]", err)
 		return
@@ -46,7 +46,7 @@ func (msg *SecurityModeCommand) encode() (wire []byte, err error) {
 		return
 	}
 	v := (buf[0] & 0x0f) //fill righthalf
-	// LV[3-9]
+	// M: LV[3-9]
 	wire = append(wire, v)
 
 	if buf, err = encodeLV(false, uint16(2), uint16(8), &msg.ReplayedUeSecurityCapabilities); err != nil {
@@ -55,19 +55,19 @@ func (msg *SecurityModeCommand) encode() (wire []byte, err error) {
 	}
 	wire = append(wire, buf...)
 
+	// O: TV[1]
 	if msg.ImeisvRequest != nil {
-		// TV[1]
 		// fill lefthalf with IEI and righthalf with value
 		wire = append(wire, (0x0E<<4)|(uint8(*msg.ImeisvRequest)&0x0f))
 	}
 
+	// O: TV[2]
 	if msg.SelectedEpsNasSecurityAlgorithms != nil {
-		//TV[2]
 		wire = append(wire, []byte{0x57, uint8(*msg.SelectedEpsNasSecurityAlgorithms)}...)
 	}
 
+	// O: TLV[3]
 	if msg.AdditionalSecurityInformation != nil {
-		// TLV[3]
 		if buf, err = encodeLV(false, uint16(1), uint16(1), msg.AdditionalSecurityInformation); err != nil {
 			err = nasError("encoding AdditionalSecurityInformation [O TLV 3]", err)
 			return
@@ -75,27 +75,30 @@ func (msg *SecurityModeCommand) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x36), buf...)
 	}
 
-	if msg.EapMessage != nil {
-		// TLV-E[7-1503]
-		if buf, err = encodeLV(true, uint16(4), uint16(1500), msg.EapMessage); err != nil {
+	// O: TLV-E[7-1503]
+	if len(msg.EapMessage) > 0 {
+		tmp := newBytesEncoder(msg.EapMessage)
+		if buf, err = encodeLV(true, uint16(4), uint16(1500), tmp); err != nil {
 			err = nasError("encoding EapMessage [O TLV-E 7-1503]", err)
 			return
 		}
 		wire = append(append(wire, 0x78), buf...)
 	}
 
-	if msg.Abba != nil {
-		// TLV[4-n]
-		if buf, err = encodeLV(false, uint16(2), uint16(0), msg.Abba); err != nil {
+	// O: TLV[4-n]
+	if len(msg.Abba) > 0 {
+		tmp := newBytesEncoder(msg.Abba)
+		if buf, err = encodeLV(false, uint16(2), uint16(0), tmp); err != nil {
 			err = nasError("encoding Abba [O TLV 4-n]", err)
 			return
 		}
 		wire = append(append(wire, 0x38), buf...)
 	}
 
-	if msg.ReplayedS1UeSecurityCapabilities != nil {
-		// TLV[4-7]
-		if buf, err = encodeLV(false, uint16(2), uint16(5), msg.ReplayedS1UeSecurityCapabilities); err != nil {
+	// O: TLV[4-7]
+	if len(msg.ReplayedS1UeSecurityCapabilities) > 0 {
+		tmp := newBytesEncoder(msg.ReplayedS1UeSecurityCapabilities)
+		if buf, err = encodeLV(false, uint16(2), uint16(5), tmp); err != nil {
 			err = nasError("encoding ReplayedS1UeSecurityCapabilities [O TLV 4-7]", err)
 			return
 		}
@@ -115,7 +118,7 @@ func (msg *SecurityModeCommand) decodeBody(wire []byte) (err error) {
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0
-	// V[1]
+	// M V[1]
 	if offset+1 > wireLen {
 		err = nasError("decoding SelectedNasSecurityAlgorithms [M V 1]", ErrIncomplete)
 		return
@@ -126,7 +129,7 @@ func (msg *SecurityModeCommand) decodeBody(wire []byte) (err error) {
 	}
 	offset++
 
-	// V[1/2]
+	// M V[1/2]
 	if offset+1 > wireLen {
 		err = nasError("decoding Ngksi [M V 1/2]", ErrIncomplete)
 		return
@@ -135,7 +138,7 @@ func (msg *SecurityModeCommand) decodeBody(wire []byte) (err error) {
 		err = nasError("decoding Ngksi [M V 1/2]", err)
 		return
 	}
-	// LV[3-9]
+	// M LV[3-9]
 	offset++
 
 	if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(8), &msg.ReplayedUeSecurityCapabilities); err != nil {
@@ -146,55 +149,55 @@ func (msg *SecurityModeCommand) decodeBody(wire []byte) (err error) {
 	for offset < wireLen {
 		iei := getIei(wire[offset])
 		switch iei {
-		case 0x0E: //TV[1]
-			msg.ImeisvRequest = new(Uint8)
-			*msg.ImeisvRequest = Uint8(wire[offset] & 0x0f) //take right 1/2
+		case 0x0E: //O: TV[1]
+			msg.ImeisvRequest = new(uint8)
+			*msg.ImeisvRequest = wire[offset] & 0x0f //take right 1/2
 			offset++
-		case 0x57: //TV[2]
+		case 0x57: //O: TV[2]
 			if offset+2 > wireLen {
 				err = nasError("decoding SelectedEpsNasSecurityAlgorithms [O TV 2]", ErrIncomplete)
 				return
 			}
-			msg.SelectedEpsNasSecurityAlgorithms = new(Uint8)
+			msg.SelectedEpsNasSecurityAlgorithms = new(uint8)
 			offset++ //consume IEI
-			*msg.SelectedEpsNasSecurityAlgorithms = Uint8(wire[offset])
+			*msg.SelectedEpsNasSecurityAlgorithms = wire[offset]
 			offset++
-		case 0x36: //TLV[3]
+		case 0x36: //O: TLV[3]
 			offset++ //consume IEI
-			v := &AdditionalSecurityInformation{}
+			v := new(AdditionalSecurityInformation)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
 				err = nasError("decoding AdditionalSecurityInformation [O TLV 3]", err)
 				return
 			}
 			offset += consumed
 			msg.AdditionalSecurityInformation = v
-		case 0x78: //TLV-E[7-1503]
+		case 0x78: //O: TLV-E[7-1503]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(1500), v); err != nil {
 				err = nasError("decoding EapMessage [O TLV-E 7-1503]", err)
 				return
 			}
 			offset += consumed
-			msg.EapMessage = v
-		case 0x38: //TLV[4-n]
+			msg.EapMessage = []byte(*v)
+		case 0x38: //O: TLV[4-n]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(0), v); err != nil {
 				err = nasError("decoding Abba [O TLV 4-n]", err)
 				return
 			}
 			offset += consumed
-			msg.Abba = v
-		case 0x19: //TLV[4-7]
+			msg.Abba = []byte(*v)
+		case 0x19: //O: TLV[4-7]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(5), v); err != nil {
 				err = nasError("decoding ReplayedS1UeSecurityCapabilities [O TLV 4-7]", err)
 				return
 			}
 			offset += consumed
-			msg.ReplayedS1UeSecurityCapabilities = v
+			msg.ReplayedS1UeSecurityCapabilities = []byte(*v)
 		default:
 			err = ErrUnknownIei
 			return

@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.944984**/
+/**generated time: 2024-12-16 16:36:18.695710**/
 
 package nas
 
@@ -7,7 +7,7 @@ package nas
  ******************************************************/
 type Notification struct {
 	MmHeader
-	AccessType Uint8 //V [1/2]
+	AccessType uint8 //M: V [1/2]
 }
 
 func (msg *Notification) encode() (wire []byte, err error) {
@@ -16,7 +16,7 @@ func (msg *Notification) encode() (wire []byte, err error) {
 			err = nasError("encoding Notification", err)
 		}
 	}()
-	//V[1/2]
+	//M: V[1/2]
 	v := (uint8(msg.AccessType) & 0x0f) //fill righthalf
 	wire = append(wire, v)
 
@@ -32,12 +32,12 @@ func (msg *Notification) decodeBody(wire []byte) (err error) {
 	}()
 	offset := 0
 	wireLen := len(wire)
-	// V[1/2]
+	// M V[1/2]
 	if offset+1 > wireLen {
 		err = nasError("decoding AccessType [M V 1/2]", ErrIncomplete)
 		return
 	}
-	msg.AccessType = Uint8(0x0f & wire[offset]) //righthalf
+	msg.AccessType = 0x0f & wire[offset] //righthalf
 	offset++
 
 	return

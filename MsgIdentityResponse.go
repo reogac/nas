@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.944350**/
+/**generated time: 2024-12-16 16:36:18.695248**/
 
 package nas
 
@@ -7,7 +7,7 @@ package nas
  ******************************************************/
 type IdentityResponse struct {
 	MmHeader
-	MobileIdentity MobileIdentity //LV-E [3-n]
+	MobileIdentity MobileIdentity //M: LV-E [3-n]
 }
 
 func (msg *IdentityResponse) encode() (wire []byte, err error) {
@@ -17,7 +17,7 @@ func (msg *IdentityResponse) encode() (wire []byte, err error) {
 		}
 	}()
 	var buf []byte
-	// LV-E[3-n]
+	// M: LV-E[3-n]
 	if buf, err = encodeLV(true, uint16(1), uint16(0), &msg.MobileIdentity); err != nil {
 		err = nasError("encoding MobileIdentity [M LV-E 3-n]", err)
 		return
@@ -36,7 +36,7 @@ func (msg *IdentityResponse) decodeBody(wire []byte) (err error) {
 	}()
 	offset := 0
 	consumed := 0
-	// LV-E[3-n]
+	// M LV-E[3-n]
 	if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), &msg.MobileIdentity); err != nil {
 		err = nasError("decoding MobileIdentity [M LV-E 3-n]", err)
 		return

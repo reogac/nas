@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.944922**/
+/**generated time: 2024-12-16 16:36:18.695663**/
 
 package nas
 
@@ -7,7 +7,7 @@ package nas
  ******************************************************/
 type GmmStatus struct {
 	MmHeader
-	GmmCause Uint8 //V [1]
+	GmmCause uint8 //M: V [1]
 }
 
 func (msg *GmmStatus) encode() (wire []byte, err error) {
@@ -16,7 +16,7 @@ func (msg *GmmStatus) encode() (wire []byte, err error) {
 			err = nasError("encoding GmmStatus", err)
 		}
 	}()
-	// V[1]
+	// M: V[1]
 	wire = append(wire, uint8(msg.GmmCause))
 
 	msg.msgType = GmmStatusMsgType //set message type to 5GMM STATUS
@@ -31,12 +31,12 @@ func (msg *GmmStatus) decodeBody(wire []byte) (err error) {
 	}()
 	offset := 0
 	wireLen := len(wire)
-	// V[1]
+	// M V[1]
 	if offset+1 > wireLen {
 		err = nasError("decoding GmmCause [M V 1]", ErrIncomplete)
 		return
 	}
-	msg.GmmCause = Uint8(wire[offset])
+	msg.GmmCause = wire[offset]
 	offset++
 
 	return

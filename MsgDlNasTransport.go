@@ -1,4 +1,4 @@
-/**generated time: 2024-07-17 15:11:00.945448**/
+/**generated time: 2024-12-16 16:36:18.696052**/
 
 package nas
 
@@ -7,13 +7,13 @@ package nas
  ******************************************************/
 type DlNasTransport struct {
 	MmHeader
-	PayloadContainerType  Uint8       //V [1/2]
-	PayloadContainer      Bytes       //LV-E [3-65537]
-	PduSessionId          *Uint8      //TV [12][2]
-	AdditionalInformation *Bytes      //TLV [24][3-n]
-	GmmCause              *Uint8      //TV [58][2]
-	BackOffTimerValue     *GprsTimer3 //TLV [37][3]
-	LowerBoundTimerValue  *GprsTimer3 //TLV [3A][3]
+	PayloadContainerType  uint8       //M: V [1/2]
+	PayloadContainer      []byte      //M: LV-E [3-65537]
+	PduSessionId          *uint8      //O: TV [12][2]
+	AdditionalInformation []byte      //O: TLV [24][3-n]
+	GmmCause              *uint8      //O: TV [58][2]
+	BackOffTimerValue     *GprsTimer3 //O: TLV [37][3]
+	LowerBoundTimerValue  *GprsTimer3 //O: TLV [3A][3]
 }
 
 func (msg *DlNasTransport) encode() (wire []byte, err error) {
@@ -23,38 +23,40 @@ func (msg *DlNasTransport) encode() (wire []byte, err error) {
 		}
 	}()
 	var buf []byte
-	//V[1/2]
+	//M: V[1/2]
 	v := (uint8(msg.PayloadContainerType) & 0x0f) //fill righthalf
-	// LV-E[3-65537]
+	// M: LV-E[3-65537]
 	wire = append(wire, v)
 
-	if buf, err = encodeLV(true, uint16(1), uint16(0), &msg.PayloadContainer); err != nil {
+	tmp := newBytesEncoder(msg.PayloadContainer)
+	if buf, err = encodeLV(true, uint16(1), uint16(0), tmp); err != nil {
 		err = nasError("encoding PayloadContainer [M LV-E 3-65537]", err)
 		return
 	}
 	wire = append(wire, buf...)
 
+	// O: TV[2]
 	if msg.PduSessionId != nil {
-		//TV[2]
 		wire = append(wire, []byte{0x12, uint8(*msg.PduSessionId)}...)
 	}
 
-	if msg.AdditionalInformation != nil {
-		// TLV[3-n]
-		if buf, err = encodeLV(false, uint16(1), uint16(0), msg.AdditionalInformation); err != nil {
+	// O: TLV[3-n]
+	if len(msg.AdditionalInformation) > 0 {
+		tmp := newBytesEncoder(msg.AdditionalInformation)
+		if buf, err = encodeLV(false, uint16(1), uint16(0), tmp); err != nil {
 			err = nasError("encoding AdditionalInformation [O TLV 3-n]", err)
 			return
 		}
 		wire = append(append(wire, 0x24), buf...)
 	}
 
+	// O: TV[2]
 	if msg.GmmCause != nil {
-		//TV[2]
 		wire = append(wire, []byte{0x58, uint8(*msg.GmmCause)}...)
 	}
 
+	// O: TLV[3]
 	if msg.BackOffTimerValue != nil {
-		// TLV[3]
 		if buf, err = encodeLV(false, uint16(1), uint16(1), msg.BackOffTimerValue); err != nil {
 			err = nasError("encoding BackOffTimerValue [O TLV 3]", err)
 			return
@@ -62,8 +64,8 @@ func (msg *DlNasTransport) encode() (wire []byte, err error) {
 		wire = append(append(wire, 0x37), buf...)
 	}
 
+	// O: TLV[3]
 	if msg.LowerBoundTimerValue != nil {
-		// TLV[3]
 		if buf, err = encodeLV(false, uint16(1), uint16(1), msg.LowerBoundTimerValue); err != nil {
 			err = nasError("encoding LowerBoundTimerValue [O TLV 3]", err)
 			return
@@ -84,62 +86,64 @@ func (msg *DlNasTransport) decodeBody(wire []byte) (err error) {
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0
-	// V[1/2]
+	// M V[1/2]
 	if offset+1 > wireLen {
 		err = nasError("decoding PayloadContainerType [M V 1/2]", ErrIncomplete)
 		return
 	}
-	msg.PayloadContainerType = Uint8(0x0f & wire[offset]) //righthalf
-	// LV-E[3-65537]
+	msg.PayloadContainerType = 0x0f & wire[offset] //righthalf
+	// M LV-E[3-65537]
 	offset++
 
-	if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), &msg.PayloadContainer); err != nil {
+	v := new(bytesDecoder)
+	if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), v); err != nil {
 		err = nasError("decoding PayloadContainer [M LV-E 3-65537]", err)
 		return
 	}
 	offset += consumed
+	msg.PayloadContainer = []byte(*v)
 	for offset < wireLen {
 		iei := getIei(wire[offset])
 		switch iei {
-		case 0x12: //TV[2]
+		case 0x12: //O: TV[2]
 			if offset+2 > wireLen {
 				err = nasError("decoding PduSessionId [C TV 2]", ErrIncomplete)
 				return
 			}
-			msg.PduSessionId = new(Uint8)
+			msg.PduSessionId = new(uint8)
 			offset++ //consume IEI
-			*msg.PduSessionId = Uint8(wire[offset])
+			*msg.PduSessionId = wire[offset]
 			offset++
-		case 0x24: //TLV[3-n]
+		case 0x24: //O: TLV[3-n]
 			offset++ //consume IEI
-			v := new(Bytes)
+			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(0), v); err != nil {
 				err = nasError("decoding AdditionalInformation [O TLV 3-n]", err)
 				return
 			}
 			offset += consumed
-			msg.AdditionalInformation = v
-		case 0x58: //TV[2]
+			msg.AdditionalInformation = []byte(*v)
+		case 0x58: //O: TV[2]
 			if offset+2 > wireLen {
 				err = nasError("decoding GmmCause [O TV 2]", ErrIncomplete)
 				return
 			}
-			msg.GmmCause = new(Uint8)
+			msg.GmmCause = new(uint8)
 			offset++ //consume IEI
-			*msg.GmmCause = Uint8(wire[offset])
+			*msg.GmmCause = wire[offset]
 			offset++
-		case 0x37: //TLV[3]
+		case 0x37: //O: TLV[3]
 			offset++ //consume IEI
-			v := &GprsTimer3{}
+			v := new(GprsTimer3)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
 				err = nasError("decoding BackOffTimerValue [O TLV 3]", err)
 				return
 			}
 			offset += consumed
 			msg.BackOffTimerValue = v
-		case 0x3A: //TLV[3]
+		case 0x3A: //O: TLV[3]
 			offset++ //consume IEI
-			v := &GprsTimer3{}
+			v := new(GprsTimer3)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
 				err = nasError("decoding LowerBoundTimerValue [O TLV 3]", err)
 				return
