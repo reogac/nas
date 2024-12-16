@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.689502**/
+/** this file was generated at 2024-12-16 17:55:27.322054 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -63,230 +63,259 @@ func decodePlainMm(wire []byte) (gmm DecodedGmmMessage, err error) {
 		return
 	}
 	header := mmHeaderFromBytes(wire[1:3]) //EPD is removed
+	gmm.MsgType = header.msgType
 	switch header.msgType {
 	case RegistrationRequestMsgType:
-		gmm.MsgType = RegistrationRequestMsgType
 		msg := &RegistrationRequest{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.RegistrationRequest = msg
+		} else {
+			err = nasError("decode RegistrationRequest message body", err)
 		}
 	case RegistrationAcceptMsgType:
-		gmm.MsgType = RegistrationAcceptMsgType
 		msg := &RegistrationAccept{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.RegistrationAccept = msg
+		} else {
+			err = nasError("decode RegistrationAccept message body", err)
 		}
 	case RegistrationCompleteMsgType:
-		gmm.MsgType = RegistrationCompleteMsgType
 		msg := &RegistrationComplete{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.RegistrationComplete = msg
+		} else {
+			err = nasError("decode RegistrationComplete message body", err)
 		}
 	case RegistrationRejectMsgType:
-		gmm.MsgType = RegistrationRejectMsgType
 		msg := &RegistrationReject{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.RegistrationReject = msg
+		} else {
+			err = nasError("decode RegistrationReject message body", err)
 		}
 	case DeregistrationRequestFromUeMsgType:
-		gmm.MsgType = DeregistrationRequestFromUeMsgType
 		msg := &DeregistrationRequestFromUe{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.DeregistrationRequestFromUe = msg
+		} else {
+			err = nasError("decode DeregistrationRequestFromUe message body", err)
 		}
 	case DeregistrationAcceptFromUeMsgType:
-		gmm.MsgType = DeregistrationAcceptFromUeMsgType
 		msg := &DeregistrationAcceptFromUe{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.DeregistrationAcceptFromUe = msg
+		} else {
+			err = nasError("decode DeregistrationAcceptFromUe message body", err)
 		}
 	case DeregistrationRequestToUeMsgType:
-		gmm.MsgType = DeregistrationRequestToUeMsgType
 		msg := &DeregistrationRequestToUe{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.DeregistrationRequestToUe = msg
+		} else {
+			err = nasError("decode DeregistrationRequestToUe message body", err)
 		}
 	case DeregistrationAcceptToUeMsgType:
-		gmm.MsgType = DeregistrationAcceptToUeMsgType
 		msg := &DeregistrationAcceptToUe{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.DeregistrationAcceptToUe = msg
+		} else {
+			err = nasError("decode DeregistrationAcceptToUe message body", err)
 		}
 	case ServiceRequestMsgType:
-		gmm.MsgType = ServiceRequestMsgType
 		msg := &ServiceRequest{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.ServiceRequest = msg
+		} else {
+			err = nasError("decode ServiceRequest message body", err)
 		}
 	case ServiceRejectMsgType:
-		gmm.MsgType = ServiceRejectMsgType
 		msg := &ServiceReject{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.ServiceReject = msg
+		} else {
+			err = nasError("decode ServiceReject message body", err)
 		}
 	case ServiceAcceptMsgType:
-		gmm.MsgType = ServiceAcceptMsgType
 		msg := &ServiceAccept{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.ServiceAccept = msg
+		} else {
+			err = nasError("decode ServiceAccept message body", err)
 		}
 	case ConfigurationUpdateCommandMsgType:
-		gmm.MsgType = ConfigurationUpdateCommandMsgType
 		msg := &ConfigurationUpdateCommand{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.ConfigurationUpdateCommand = msg
+		} else {
+			err = nasError("decode ConfigurationUpdateCommand message body", err)
 		}
 	case ConfigurationUpdateCompleteMsgType:
-		gmm.MsgType = ConfigurationUpdateCompleteMsgType
 		msg := &ConfigurationUpdateComplete{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.ConfigurationUpdateComplete = msg
+		} else {
+			err = nasError("decode ConfigurationUpdateComplete message body", err)
 		}
 	case AuthenticationRequestMsgType:
-		gmm.MsgType = AuthenticationRequestMsgType
 		msg := &AuthenticationRequest{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.AuthenticationRequest = msg
+		} else {
+			err = nasError("decode AuthenticationRequest message body", err)
 		}
 	case AuthenticationResponseMsgType:
-		gmm.MsgType = AuthenticationResponseMsgType
 		msg := &AuthenticationResponse{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.AuthenticationResponse = msg
+		} else {
+			err = nasError("decode AuthenticationResponse message body", err)
 		}
 	case AuthenticationRejectMsgType:
-		gmm.MsgType = AuthenticationRejectMsgType
 		msg := &AuthenticationReject{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.AuthenticationReject = msg
+		} else {
+			err = nasError("decode AuthenticationReject message body", err)
 		}
 	case AuthenticationFailureMsgType:
-		gmm.MsgType = AuthenticationFailureMsgType
 		msg := &AuthenticationFailure{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.AuthenticationFailure = msg
+		} else {
+			err = nasError("decode AuthenticationFailure message body", err)
 		}
 	case AuthenticationResultMsgType:
-		gmm.MsgType = AuthenticationResultMsgType
 		msg := &AuthenticationResult{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.AuthenticationResult = msg
+		} else {
+			err = nasError("decode AuthenticationResult message body", err)
 		}
 	case IdentityRequestMsgType:
-		gmm.MsgType = IdentityRequestMsgType
 		msg := &IdentityRequest{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.IdentityRequest = msg
+		} else {
+			err = nasError("decode IdentityRequest message body", err)
 		}
 	case IdentityResponseMsgType:
-		gmm.MsgType = IdentityResponseMsgType
 		msg := &IdentityResponse{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.IdentityResponse = msg
+		} else {
+			err = nasError("decode IdentityResponse message body", err)
 		}
 	case SecurityModeCommandMsgType:
-		gmm.MsgType = SecurityModeCommandMsgType
 		msg := &SecurityModeCommand{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.SecurityModeCommand = msg
+		} else {
+			err = nasError("decode SecurityModeCommand message body", err)
 		}
 	case SecurityModeCompleteMsgType:
-		gmm.MsgType = SecurityModeCompleteMsgType
 		msg := &SecurityModeComplete{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.SecurityModeComplete = msg
+		} else {
+			err = nasError("decode SecurityModeComplete message body", err)
 		}
 	case SecurityModeRejectMsgType:
-		gmm.MsgType = SecurityModeRejectMsgType
 		msg := &SecurityModeReject{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.SecurityModeReject = msg
+		} else {
+			err = nasError("decode SecurityModeReject message body", err)
 		}
 	case GmmStatusMsgType:
-		gmm.MsgType = GmmStatusMsgType
 		msg := &GmmStatus{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.GmmStatus = msg
+		} else {
+			err = nasError("decode GmmStatus message body", err)
 		}
 	case NotificationMsgType:
-		gmm.MsgType = NotificationMsgType
 		msg := &Notification{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.Notification = msg
+		} else {
+			err = nasError("decode Notification message body", err)
 		}
 	case NotificationResponseMsgType:
-		gmm.MsgType = NotificationResponseMsgType
 		msg := &NotificationResponse{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.NotificationResponse = msg
+		} else {
+			err = nasError("decode NotificationResponse message body", err)
 		}
 	case UlNasTransportMsgType:
-		gmm.MsgType = UlNasTransportMsgType
 		msg := &UlNasTransport{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.UlNasTransport = msg
+		} else {
+			err = nasError("decode UlNasTransport message body", err)
 		}
 	case DlNasTransportMsgType:
-		gmm.MsgType = DlNasTransportMsgType
 		msg := &DlNasTransport{
 			MmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[3:]); err == nil {
 			gmm.DlNasTransport = msg
+		} else {
+			err = nasError("decode DlNasTransport message body", err)
 		}
 	default:
 		err = ErrUnknownMsgType
@@ -299,135 +328,168 @@ func decodeSm(wire []byte) (gsm DecodedGsmMessage, err error) {
 		return
 	}
 	header := smHeaderFromBytes(wire[1:4]) //EPD is removed
+	gsm.MsgType = header.msgType
 	switch header.msgType {
 	case PduSessionEstablishmentRequestMsgType:
-		gsm.MsgType = PduSessionEstablishmentRequestMsgType
 		msg := &PduSessionEstablishmentRequest{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionEstablishmentRequest = msg
+		} else {
+			err = nasError("decode PduSessionEstablishmentRequest message body", err)
 		}
+
 	case PduSessionEstablishmentAcceptMsgType:
-		gsm.MsgType = PduSessionEstablishmentAcceptMsgType
 		msg := &PduSessionEstablishmentAccept{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionEstablishmentAccept = msg
+		} else {
+			err = nasError("decode PduSessionEstablishmentAccept message body", err)
 		}
+
 	case PduSessionEstablishmentRejectMsgType:
-		gsm.MsgType = PduSessionEstablishmentRejectMsgType
 		msg := &PduSessionEstablishmentReject{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionEstablishmentReject = msg
+		} else {
+			err = nasError("decode PduSessionEstablishmentReject message body", err)
 		}
+
 	case PduSessionAuthenticationCommandMsgType:
-		gsm.MsgType = PduSessionAuthenticationCommandMsgType
 		msg := &PduSessionAuthenticationCommand{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionAuthenticationCommand = msg
+		} else {
+			err = nasError("decode PduSessionAuthenticationCommand message body", err)
 		}
+
 	case PduSessionAuthenticationCompleteMsgType:
-		gsm.MsgType = PduSessionAuthenticationCompleteMsgType
 		msg := &PduSessionAuthenticationComplete{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionAuthenticationComplete = msg
+		} else {
+			err = nasError("decode PduSessionAuthenticationComplete message body", err)
 		}
+
 	case PduSessionAuthenticationResultMsgType:
-		gsm.MsgType = PduSessionAuthenticationResultMsgType
 		msg := &PduSessionAuthenticationResult{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionAuthenticationResult = msg
+		} else {
+			err = nasError("decode PduSessionAuthenticationResult message body", err)
 		}
+
 	case PduSessionModificationRequestMsgType:
-		gsm.MsgType = PduSessionModificationRequestMsgType
 		msg := &PduSessionModificationRequest{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionModificationRequest = msg
+		} else {
+			err = nasError("decode PduSessionModificationRequest message body", err)
 		}
+
 	case PduSessionModificationRejectMsgType:
-		gsm.MsgType = PduSessionModificationRejectMsgType
 		msg := &PduSessionModificationReject{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionModificationReject = msg
+		} else {
+			err = nasError("decode PduSessionModificationReject message body", err)
 		}
+
 	case PduSessionModificationCommandMsgType:
-		gsm.MsgType = PduSessionModificationCommandMsgType
 		msg := &PduSessionModificationCommand{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionModificationCommand = msg
+		} else {
+			err = nasError("decode PduSessionModificationCommand message body", err)
 		}
+
 	case PduSessionModificationCompleteMsgType:
-		gsm.MsgType = PduSessionModificationCompleteMsgType
 		msg := &PduSessionModificationComplete{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionModificationComplete = msg
+		} else {
+			err = nasError("decode PduSessionModificationComplete message body", err)
 		}
+
 	case PduSessionModificationCommandRejectMsgType:
-		gsm.MsgType = PduSessionModificationCommandRejectMsgType
 		msg := &PduSessionModificationCommandReject{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionModificationCommandReject = msg
+		} else {
+			err = nasError("decode PduSessionModificationCommandReject message body", err)
 		}
+
 	case PduSessionReleaseRequestMsgType:
-		gsm.MsgType = PduSessionReleaseRequestMsgType
 		msg := &PduSessionReleaseRequest{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionReleaseRequest = msg
+		} else {
+			err = nasError("decode PduSessionReleaseRequest message body", err)
 		}
+
 	case PduSessionReleaseRejectMsgType:
-		gsm.MsgType = PduSessionReleaseRejectMsgType
 		msg := &PduSessionReleaseReject{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionReleaseReject = msg
+		} else {
+			err = nasError("decode PduSessionReleaseReject message body", err)
 		}
+
 	case PduSessionReleaseCommandMsgType:
-		gsm.MsgType = PduSessionReleaseCommandMsgType
 		msg := &PduSessionReleaseCommand{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionReleaseCommand = msg
+		} else {
+			err = nasError("decode PduSessionReleaseCommand message body", err)
 		}
+
 	case PduSessionReleaseCompleteMsgType:
-		gsm.MsgType = PduSessionReleaseCompleteMsgType
 		msg := &PduSessionReleaseComplete{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.PduSessionReleaseComplete = msg
+		} else {
+			err = nasError("decode PduSessionReleaseComplete message body", err)
 		}
+
 	case GsmStatusMsgType:
-		gsm.MsgType = GsmStatusMsgType
 		msg := &GsmStatus{
 			SmHeader: *header,
 		}
 		if err = msg.decodeBody(wire[4:]); err == nil {
 			gsm.GsmStatus = msg
+		} else {
+			err = nasError("decode GsmStatus message body", err)
 		}
+
 	default:
 		err = ErrUnknownMsgType
 	}

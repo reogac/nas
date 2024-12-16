@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.698975**/
+/** this file was generated at 2024-12-16 17:55:27.331700 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -11,11 +11,6 @@ type GsmStatus struct {
 }
 
 func (msg *GsmStatus) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding GsmStatus", err)
-		}
-	}()
 	// M: V[1]
 	wire = append(wire, uint8(msg.GsmCause))
 
@@ -24,11 +19,6 @@ func (msg *GsmStatus) encode() (wire []byte, err error) {
 	return
 }
 func (msg *GsmStatus) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding GsmStatus", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	// M V[1]

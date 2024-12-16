@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.692558**/
+/** this file was generated at 2024-12-16 17:55:27.324844 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -11,11 +11,6 @@ type RegistrationComplete struct {
 }
 
 func (msg *RegistrationComplete) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding RegistrationComplete", err)
-		}
-	}()
 	var buf []byte
 	// O: TLV-E[20]
 	if len(msg.SorTransparentContainer) > 0 {
@@ -32,11 +27,6 @@ func (msg *RegistrationComplete) encode() (wire []byte, err error) {
 	return
 }
 func (msg *RegistrationComplete) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding RegistrationComplete", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

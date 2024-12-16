@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.695757**/
+/** this file was generated at 2024-12-16 17:55:27.328487 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -11,11 +11,6 @@ type NotificationResponse struct {
 }
 
 func (msg *NotificationResponse) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding NotificationResponse", err)
-		}
-	}()
 	var buf []byte
 	// O: TLV[4-34]
 	if msg.PduSessionStatus != nil {
@@ -31,11 +26,6 @@ func (msg *NotificationResponse) encode() (wire []byte, err error) {
 	return
 }
 func (msg *NotificationResponse) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding NotificationResponse", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

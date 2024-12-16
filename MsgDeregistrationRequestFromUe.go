@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.692924**/
+/** this file was generated at 2024-12-16 17:55:27.325677 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -13,11 +13,6 @@ type DeregistrationRequestFromUe struct {
 }
 
 func (msg *DeregistrationRequestFromUe) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding DeregistrationRequestFromUe", err)
-		}
-	}()
 	var buf []byte
 	// M: V[1/2]
 	if buf, err = msg.DeRegistrationType.encode(); err != nil {
@@ -53,11 +48,6 @@ func (msg *DeregistrationRequestFromUe) encode() (wire []byte, err error) {
 	return
 }
 func (msg *DeregistrationRequestFromUe) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding DeregistrationRequestFromUe", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

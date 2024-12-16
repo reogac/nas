@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.690460**/
+/** this file was generated at 2024-12-16 17:55:27.322750 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -52,11 +52,6 @@ type RegistrationRequest struct {
 }
 
 func (msg *RegistrationRequest) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding RegistrationRequest", err)
-		}
-	}()
 	var buf []byte
 	// M: V[1/2]
 	if buf, err = msg.RegistrationType.encode(); err != nil {
@@ -463,11 +458,6 @@ func (msg *RegistrationRequest) encode() (wire []byte, err error) {
 	return
 }
 func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding RegistrationRequest", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

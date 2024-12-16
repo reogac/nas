@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.695710**/
+/** this file was generated at 2024-12-16 17:55:27.328439 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -11,11 +11,6 @@ type Notification struct {
 }
 
 func (msg *Notification) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding Notification", err)
-		}
-	}()
 	//M: V[1/2]
 	v := (uint8(msg.AccessType) & 0x0f) //fill righthalf
 	wire = append(wire, v)
@@ -25,11 +20,6 @@ func (msg *Notification) encode() (wire []byte, err error) {
 	return
 }
 func (msg *Notification) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding Notification", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	// M V[1/2]

@@ -54,21 +54,21 @@ type NasContext struct {
 	encKey        [16]uint8 //encryption key
 	bearer        uint8
 	emergency     bool
-	isDownlink    bool
+	isAmf         bool
 	mutex         sync.Mutex
 }
 
-func NewEmergencyNasContext(isDownlink bool, bearer uint8) *NasContext {
+func NewEmergencyNasContext(isAmf bool, bearer uint8) *NasContext {
 	ctx := &NasContext{
 		emergency: true,
 		bearer:    bearer,
 	}
-	ctx.setDirection(isDownlink)
+	ctx.setDirection(isAmf)
 	return ctx
 }
 
-func (ctx *NasContext) setDirection(isDownlink bool) {
-	ctx.isDownlink = isDownlink
+func (ctx *NasContext) setDirection(isAmf bool) {
+	ctx.isAmf = isAmf
 }
 
 func (ctx *NasContext) selectAlgorithms(intOrder []byte, encOrder []byte, ueSecCap *UeSecurityCapability) {
@@ -148,14 +148,14 @@ func (ctx *NasContext) deriveKeys(kAmf []byte) (err error) {
 
 func (ctx *NasContext) getDirection(isSending bool) (direction uint8, counter uint32) {
 	if isSending { //for sending message
-		if ctx.isDownlink {
+		if ctx.isAmf {
 			direction = DirectionDownlink
 		} else {
 			direction = DirectionUplink
 		}
 		counter = uint32(ctx.localCounter)
 	} else { //for receiving message
-		if ctx.isDownlink {
+		if ctx.isAmf {
 			direction = DirectionUplink
 		} else {
 			direction = DirectionDownlink
@@ -215,4 +215,38 @@ func (ctx *NasContext) calculateMac(payload []byte, isSending bool) (mac []byte,
 	}
 
 	return
+}
+
+func acceptPlaintextN1Mm(msgType uint8, isAmf bool) bool {
+	if isAmf {
+		// TS 24.501 4.4.4.3: Except the messages listed below, no NAS signalling messages shall be processed
+		// by the receiving 5GMM entity in the AMF or forwarded to the 5GSM entity, unless the secure exchange
+		// of NAS messages has been established for the NAS signalling connection
+		switch msgType {
+		case RegistrationRequestMsgType:
+		case IdentityResponseMsgType:
+		case AuthenticationResponseMsgType:
+		case AuthenticationFailureMsgType:
+		case SecurityModeRejectMsgType:
+		case DeregistrationRequestFromUeMsgType:
+		case DeregistrationAcceptToUeMsgType:
+		default:
+			return false
+		}
+		return true
+	} else {
+		switch msgType {
+		case IdentityRequestMsgType:
+		case AuthenticationRequestMsgType:
+		case SecurityModeCommandMsgType:
+		case ServiceRejectMsgType:
+		case RegistrationRejectMsgType:
+		case AuthenticationRejectMsgType:
+		case GmmStatusMsgType:
+		default:
+			return false
+		}
+		return true
+
+	}
 }

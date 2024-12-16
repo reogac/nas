@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.694901**/
+/** this file was generated at 2024-12-16 17:55:27.327641 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -12,11 +12,6 @@ type AuthenticationResponse struct {
 }
 
 func (msg *AuthenticationResponse) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding AuthenticationResponse", err)
-		}
-	}()
 	var buf []byte
 	// O: TLV[18]
 	if len(msg.AuthenticationResponseParameter) > 0 {
@@ -43,11 +38,6 @@ func (msg *AuthenticationResponse) encode() (wire []byte, err error) {
 	return
 }
 func (msg *AuthenticationResponse) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding AuthenticationResponse", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

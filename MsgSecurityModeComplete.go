@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.695516**/
+/** this file was generated at 2024-12-16 17:55:27.328245 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -13,11 +13,6 @@ type SecurityModeComplete struct {
 }
 
 func (msg *SecurityModeComplete) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding SecurityModeComplete", err)
-		}
-	}()
 	var buf []byte
 	// O: TLV-E[12]
 	if msg.Imeisv != nil {
@@ -52,11 +47,6 @@ func (msg *SecurityModeComplete) encode() (wire []byte, err error) {
 	return
 }
 func (msg *SecurityModeComplete) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding SecurityModeComplete", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

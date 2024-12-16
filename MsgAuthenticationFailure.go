@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.695036**/
+/** this file was generated at 2024-12-16 17:55:27.327771 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -12,11 +12,6 @@ type AuthenticationFailure struct {
 }
 
 func (msg *AuthenticationFailure) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding AuthenticationFailure", err)
-		}
-	}()
 	var buf []byte
 	// M: V[1]
 	wire = append(wire, uint8(msg.GmmCause))
@@ -36,11 +31,6 @@ func (msg *AuthenticationFailure) encode() (wire []byte, err error) {
 	return
 }
 func (msg *AuthenticationFailure) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding AuthenticationFailure", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

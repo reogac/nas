@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.695198**/
+/** this file was generated at 2024-12-16 17:55:27.327928 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -11,11 +11,6 @@ type IdentityRequest struct {
 }
 
 func (msg *IdentityRequest) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding IdentityRequest", err)
-		}
-	}()
 	//M: V[1/2]
 	v := (uint8(msg.IdentityType) & 0x0f) //fill righthalf
 	wire = append(wire, v)
@@ -25,11 +20,6 @@ func (msg *IdentityRequest) encode() (wire []byte, err error) {
 	return
 }
 func (msg *IdentityRequest) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding IdentityRequest", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	// M V[1/2]

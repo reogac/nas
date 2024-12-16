@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.696052**/
+/** this file was generated at 2024-12-16 17:55:27.328789 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -17,11 +17,6 @@ type DlNasTransport struct {
 }
 
 func (msg *DlNasTransport) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding DlNasTransport", err)
-		}
-	}()
 	var buf []byte
 	//M: V[1/2]
 	v := (uint8(msg.PayloadContainerType) & 0x0f) //fill righthalf
@@ -78,11 +73,6 @@ func (msg *DlNasTransport) encode() (wire []byte, err error) {
 	return
 }
 func (msg *DlNasTransport) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding DlNasTransport", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

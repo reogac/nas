@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.690427**/
+/** this file was generated at 2024-12-16 17:55:27.322720 by tqtung@etri.re.kr **/
 
 package nas
 

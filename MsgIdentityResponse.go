@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.695248**/
+/** this file was generated at 2024-12-16 17:55:27.327978 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -11,11 +11,6 @@ type IdentityResponse struct {
 }
 
 func (msg *IdentityResponse) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding IdentityResponse", err)
-		}
-	}()
 	var buf []byte
 	// M: LV-E[3-n]
 	if buf, err = encodeLV(true, uint16(1), uint16(0), &msg.MobileIdentity); err != nil {
@@ -29,11 +24,6 @@ func (msg *IdentityResponse) encode() (wire []byte, err error) {
 	return
 }
 func (msg *IdentityResponse) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding IdentityResponse", err)
-		}
-	}()
 	offset := 0
 	consumed := 0
 	// M LV-E[3-n]

@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.692619**/
+/** this file was generated at 2024-12-16 17:55:27.325380 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -22,11 +22,6 @@ type RegistrationReject struct {
 }
 
 func (msg *RegistrationReject) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding RegistrationReject", err)
-		}
-	}()
 	var buf []byte
 	// M: V[1]
 	wire = append(wire, uint8(msg.GmmCause))
@@ -140,11 +135,6 @@ func (msg *RegistrationReject) encode() (wire []byte, err error) {
 	return
 }
 func (msg *RegistrationReject) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding RegistrationReject", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

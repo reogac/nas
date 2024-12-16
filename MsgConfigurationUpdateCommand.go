@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.694005**/
+/** this file was generated at 2024-12-16 17:55:27.326755 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -44,11 +44,6 @@ type ConfigurationUpdateCommand struct {
 }
 
 func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding ConfigurationUpdateCommand", err)
-		}
-	}()
 	var buf []byte
 	// O: TV[1]
 	if msg.ConfigurationUpdateIndication != nil {
@@ -363,11 +358,6 @@ func (msg *ConfigurationUpdateCommand) encode() (wire []byte, err error) {
 	return
 }
 func (msg *ConfigurationUpdateCommand) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding ConfigurationUpdateCommand", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

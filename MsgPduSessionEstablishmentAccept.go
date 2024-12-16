@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.696667**/
+/** this file was generated at 2024-12-16 17:55:27.329404 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -32,11 +32,6 @@ type PduSessionEstablishmentAccept struct {
 }
 
 func (msg *PduSessionEstablishmentAccept) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding PduSessionEstablishmentAccept", err)
-		}
-	}()
 	var buf []byte
 	//M: V[1/2]
 	v := (uint8(msg.SelectedPduSessionType) & 0x0f) //fill righthalf
@@ -220,11 +215,6 @@ func (msg *PduSessionEstablishmentAccept) encode() (wire []byte, err error) {
 	return
 }
 func (msg *PduSessionEstablishmentAccept) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding PduSessionEstablishmentAccept", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.693787**/
+/** this file was generated at 2024-12-16 17:55:27.326539 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -18,11 +18,6 @@ type ServiceAccept struct {
 }
 
 func (msg *ServiceAccept) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding ServiceAccept", err)
-		}
-	}()
 	var buf []byte
 	// O: TLV[4-34]
 	if msg.PduSessionStatus != nil {
@@ -103,11 +98,6 @@ func (msg *ServiceAccept) encode() (wire []byte, err error) {
 	return
 }
 func (msg *ServiceAccept) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding ServiceAccept", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

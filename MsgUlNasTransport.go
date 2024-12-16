@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.695815**/
+/** this file was generated at 2024-12-16 17:55:27.328543 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -20,11 +20,6 @@ type UlNasTransport struct {
 }
 
 func (msg *UlNasTransport) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding UlNasTransport", err)
-		}
-	}()
 	var buf []byte
 	//M: V[1/2]
 	v := (uint8(msg.PayloadContainerType) & 0x0f) //fill righthalf
@@ -99,11 +94,6 @@ func (msg *UlNasTransport) encode() (wire []byte, err error) {
 	return
 }
 func (msg *UlNasTransport) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding UlNasTransport", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

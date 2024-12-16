@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.698898**/
+/** this file was generated at 2024-12-16 17:55:27.331625 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -12,11 +12,6 @@ type PduSessionReleaseComplete struct {
 }
 
 func (msg *PduSessionReleaseComplete) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding PduSessionReleaseComplete", err)
-		}
-	}()
 	var buf []byte
 	// O: TV[2]
 	if msg.GsmCause != nil {
@@ -37,11 +32,6 @@ func (msg *PduSessionReleaseComplete) encode() (wire []byte, err error) {
 	return
 }
 func (msg *PduSessionReleaseComplete) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding PduSessionReleaseComplete", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

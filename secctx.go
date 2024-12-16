@@ -25,14 +25,14 @@ type SecurityContext struct {
 	active    bool
 }
 
-func NewSecurityContext(ksi *KeySetIdentifier, kamf []byte, isDownlink bool, bearer uint8) *SecurityContext {
+func NewSecurityContext(ksi *KeySetIdentifier, kamf []byte, isAmf bool, bearer uint8) *SecurityContext {
 	ctx := &SecurityContext{
 		ngKsi:  *ksi,
 		active: false,
 	}
 	ctx.kamf = make([]byte, len(kamf))
 	copy(ctx.kamf, kamf)
-	ctx.nasCtx.isDownlink = isDownlink
+	ctx.nasCtx.isAmf = isAmf
 	ctx.nasCtx.bearer = bearer
 	return ctx
 }

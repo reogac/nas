@@ -46,7 +46,7 @@ func EncodeSm(msg GsmMessage) (wire []byte, err error) {
 func EncodeMm(ctx *NasContext, msg GmmMessage) (wire []byte, err error) {
 	secType := msg.GetSecurityHeader()
 	if ctx == nil && secType != NasSecNone {
-		err = fmt.Errorf("No security context to encode protected message")
+		err = fmt.Errorf("No security context to encode protected NasMm message")
 		return
 	}
 
@@ -168,23 +168,9 @@ func decodeMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err error) {
 		}
 		// if having sec-context and not for emergency, check for message type
 
-		//TODO: this logic is for downlink (AMF), we may need to add logic for
-		//uplink (UE)
-		if ctx != nil && !ctx.emergency {
-			// TS 24.501 4.4.4.3: Except the messages listed below, no NAS signalling messages shall be processed
-			// by the receiving 5GMM entity in the AMF or forwarded to the 5GSM entity, unless the secure exchange
-			// of NAS messages has been established for the NAS signalling connection
-			switch gmm.MsgType {
-			case RegistrationRequestMsgType:
-			case IdentityResponseMsgType:
-			case AuthenticationResponseMsgType:
-			case AuthenticationFailureMsgType:
-			case SecurityModeRejectMsgType:
-			case DeregistrationRequestFromUeMsgType:
-			case DeregistrationAcceptToUeMsgType:
-			default:
-				err = fmt.Errorf("UE can not send plain nas for non-emergency service when there is a valid security context")
-			}
+		//TODO: this logic is for AMF, we may need to add logic for UE
+		if ctx != nil && !ctx.emergency && !acceptPlaintextN1Mm(gmm.MsgType, ctx.isAmf) {
+			err = fmt.Errorf("UE can not send plain nas for non-emergency service when there is a valid security context")
 		}
 		return
 

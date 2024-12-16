@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.698420**/
+/** this file was generated at 2024-12-16 17:55:27.331157 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -12,11 +12,6 @@ type PduSessionModificationComplete struct {
 }
 
 func (msg *PduSessionModificationComplete) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding PduSessionModificationComplete", err)
-		}
-	}()
 	var buf []byte
 	// O: TLV-E[4-65538]
 	if msg.ExtendedProtocolConfigurationOptions != nil {
@@ -42,11 +37,6 @@ func (msg *PduSessionModificationComplete) encode() (wire []byte, err error) {
 	return
 }
 func (msg *PduSessionModificationComplete) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding PduSessionModificationComplete", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

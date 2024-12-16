@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.697358**/
+/** this file was generated at 2024-12-16 17:55:27.330098 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -12,11 +12,6 @@ type PduSessionAuthenticationCommand struct {
 }
 
 func (msg *PduSessionAuthenticationCommand) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding PduSessionAuthenticationCommand", err)
-		}
-	}()
 	var buf []byte
 	// M: LV-E[6-1502]
 	tmp := newBytesEncoder(msg.EapMessage)
@@ -40,11 +35,6 @@ func (msg *PduSessionAuthenticationCommand) encode() (wire []byte, err error) {
 	return
 }
 func (msg *PduSessionAuthenticationCommand) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding PduSessionAuthenticationCommand", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0

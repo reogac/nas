@@ -1,4 +1,4 @@
-/**generated time: 2024-12-16 16:36:18.694980**/
+/** this file was generated at 2024-12-16 17:55:27.327717 by tqtung@etri.re.kr **/
 
 package nas
 
@@ -11,11 +11,6 @@ type AuthenticationReject struct {
 }
 
 func (msg *AuthenticationReject) encode() (wire []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("encoding AuthenticationReject", err)
-		}
-	}()
 	var buf []byte
 	// O: TLV-E[7-1503]
 	if len(msg.EapMessage) > 0 {
@@ -32,11 +27,6 @@ func (msg *AuthenticationReject) encode() (wire []byte, err error) {
 	return
 }
 func (msg *AuthenticationReject) decodeBody(wire []byte) (err error) {
-	defer func() {
-		if err != nil {
-			err = nasError("decoding AuthenticationReject", err)
-		}
-	}()
 	offset := 0
 	wireLen := len(wire)
 	consumed := 0
