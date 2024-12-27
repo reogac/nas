@@ -185,7 +185,7 @@ func decodeMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err error) {
 
 		//TODO: this logic is for AMF, we may need to add logic for UE
 		if ctx != nil && !ctx.emergency && !acceptPlaintextN1Mm(gmm.MsgType, ctx.isAmf) {
-			err = fmt.Errorf("UE can not send plain nas for non-emergency service when there is a valid security context")
+			err = fmt.Errorf("Receive plain nas for non-emergency service when there is a valid security context")
 		}
 		return
 
@@ -211,6 +211,7 @@ func decodeProtectedMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err
 	seqNum := wire[6] //sequence number
 
 	rmac32 := secHeader[2:] //receive mac32
+	gmm.Raw = wire
 	wire = wire[6:]
 
 	newNasContext := false
@@ -239,12 +240,12 @@ func decodeProtectedMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err
 
 	//no security context and message is not encrypted
 	if ctx == nil {
-		//decode plain text (event if it is integrity protected)
+		//decode plain text (eventhough it is integrity protected)
 		if gmm, err = decodePlainMm(wire[1:]); err != nil { //remote sequence number
 			err = nasError("fail to decode plain nas", err)
 		}
 		gmm.SecHeader = secType
-		gmm.MacFailed = false
+		gmm.MacFailed = true
 		return
 	}
 	//now, there must be a security context to decode

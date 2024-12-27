@@ -21,6 +21,7 @@ type DecodedGmmMessage struct {
 	MsgType   uint8 // message type
 	MacFailed bool  // indicate that integrity check has failed
 	SecHeader uint8 //outer security header type
+	Raw       []byte
 
 	RegistrationRequest         *RegistrationRequest
 	RegistrationAccept          *RegistrationAccept
