@@ -73,74 +73,39 @@ type NasContext struct {
 	mutex         sync.Mutex
 }
 
-func NewEmergencyNasContext(isAmf bool, bearer uint8) *NasContext {
+func NewNasContext(isAmf bool, bearer uint8) *NasContext {
 	ctx := &NasContext{
-		emergency: true,
-		bearer:    bearer,
+		//emergency: true,
+		bearer: bearer,
+		isAmf:  isAmf,
 	}
-	ctx.setDirection(isAmf)
 	return ctx
 }
 
-func (ctx *NasContext) setDirection(isAmf bool) {
-	ctx.isAmf = isAmf
+func (ctx *NasContext) UlCounter() uint32 {
+	if ctx.isAmf {
+		return uint32(ctx.localCounter)
+	}
+	return uint32(ctx.remoteCounter)
 }
 
-func (ctx *NasContext) selectAlgorithms(intOrder []byte, encOrder []byte, ueSecCap *UeSecurityCapability) {
-	//for oai ue
-	ctx.encAlg = AlgCiphering128NEA0
-	ctx.intAlg = AlgIntegrity128NIA2
-	supported := false
-	for _, alg := range intOrder {
-		switch alg {
-		case AlgIntegrity128NIA0:
-			supported = ueSecCap.GetIA(0)
-		case AlgIntegrity128NIA1:
-			supported = ueSecCap.GetIA(1)
-		case AlgIntegrity128NIA2:
-			supported = ueSecCap.GetIA(2)
-		case AlgIntegrity128NIA3:
-			supported = ueSecCap.GetIA(3)
-		}
-		if supported {
-			ctx.intAlg = alg
-			break
-		}
+func (ctx *NasContext) DlCounter() uint32 {
+	if !ctx.isAmf {
+		return uint32(ctx.localCounter)
 	}
-
-	supported = false
-	for _, alg := range encOrder {
-		switch alg {
-		case AlgCiphering128NEA0:
-			supported = ueSecCap.GetEA(0)
-		case AlgCiphering128NEA1:
-			supported = ueSecCap.GetEA(1)
-		case AlgCiphering128NEA2:
-			supported = ueSecCap.GetEA(2)
-		case AlgCiphering128NEA3:
-			supported = ueSecCap.GetEA(3)
-		}
-		if supported {
-			ctx.encAlg = alg
-			break
-		}
-	}
-
-}
-
-func (ctx *NasContext) setAlgorithms(encAlg uint8, intAlg uint8) {
-	ctx.encAlg = encAlg
-	ctx.intAlg = intAlg
+	return uint32(ctx.remoteCounter)
 }
 
 func (ctx *NasContext) SelectedAlgorithms() (uint8, uint8) {
 	return ctx.encAlg, ctx.intAlg
 }
 
-func (ctx *NasContext) deriveKeys(kAmf []byte) (err error) {
+func (ctx *NasContext) DeriveKeys(encAlg, intAlg uint8, kAmf []byte) (err error) {
+	ctx.encAlg = encAlg
+	ctx.intAlg = intAlg
 	// Encryption Key
 	P0 := []byte{NNASEncAlg}
-	P1 := []byte{ctx.encAlg}
+	P1 := []byte{encAlg}
 
 	var kEnc, kInt []byte
 	if kEnc, err = sec.AlgKey(kAmf, P0, P1); err != nil {
@@ -149,7 +114,7 @@ func (ctx *NasContext) deriveKeys(kAmf []byte) (err error) {
 
 	// Integrity Key
 	P0 = []byte{NNASIntAlg}
-	P1 = []byte{ctx.intAlg}
+	P1 = []byte{intAlg}
 
 	if kInt, err = sec.AlgKey(kAmf, P0, P1); err != nil {
 		return
