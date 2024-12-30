@@ -210,8 +210,9 @@ func decodeProtectedMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err
 	secType := secHeader[1] & 0x0f
 	seqNum := wire[6] //sequence number
 
+	raw := wire
+
 	rmac32 := secHeader[2:] //receive mac32
-	gmm.Raw = wire
 	wire = wire[6:]
 
 	newNasContext := false
@@ -244,6 +245,7 @@ func decodeProtectedMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err
 		if gmm, err = decodePlainMm(wire[1:]); err != nil { //remote sequence number
 			err = nasError("fail to decode plain nas", err)
 		}
+		gmm.Raw = raw
 		gmm.SecHeader = secType
 		gmm.MacFailed = true
 		return
@@ -274,6 +276,7 @@ func decodeProtectedMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err
 			if gmm, err = decodePlainMm(wire[1:]); err == nil { //remove sequence number
 				gmm.SecHeader = secType
 				gmm.MacFailed = true
+				gmm.Raw = raw
 			} else {
 				err = nasError("fail to decode plain nas", err)
 			}
@@ -291,6 +294,7 @@ func decodeProtectedMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err
 	}
 
 	gmm, err = decodePlainMm(wire)
+	gmm.Raw = raw
 	gmm.SecHeader = secType
 	gmm.MacFailed = false
 	return
