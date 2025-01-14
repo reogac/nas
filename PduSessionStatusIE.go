@@ -33,7 +33,7 @@ func (ie *PduSessionStatus) decode(wire []byte) (err error) {
 	if len(wire) < 2 {
 		return ErrIncomplete
 	}
-	copy(ie.bytes[:], wire[0:3])
+	copy(ie.bytes[:], wire[0:2])
 	if len(wire) > 2 {
 		ie.Spares = make([]byte, len(wire)-2)
 		copy(ie.Spares[:], wire[2:])
