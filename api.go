@@ -291,11 +291,14 @@ func decodeProtectedMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err
 			err = nasError("fail to decrypt message", err)
 			return
 		}
+		gmm, err = decodePlainMm(wire)
+	} else {
+		gmm, err = decodePlainMm(wire[1:])
 	}
 
-	gmm, err = decodePlainMm(wire)
 	gmm.Raw = raw
 	gmm.SecHeader = secType
 	gmm.MacFailed = false
+
 	return
 }
