@@ -143,7 +143,10 @@ func (ie *NetworkFeatureSupport) SetMCSI(f bool) {
 
 // octet 1, bit 0
 func (ie *NetworkFeatureSupport) GetEMCN() bool {
-	return getBit(ie.bytes[1], 0) == 0
+	if ie.hasOctet1 {
+		return getBit(ie.bytes[1], 0) == 0
+	}
+	return false
 }
 
 func (ie *NetworkFeatureSupport) SetEMCN(f bool) {
