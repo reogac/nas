@@ -25,10 +25,10 @@ type NetworkFeatureSupport struct {
 func (ie *NetworkFeatureSupport) encode() (wire []byte, err error) {
 	encodeLen := 1
 	if ie.hasOctet1 {
-		encodeLen++
+		encodeLen = 2
 	}
 	if ie.hasOctet2 {
-		encodeLen++
+		encodeLen = 3
 	}
 	wire = ie.bytes[:encodeLen]
 	return
