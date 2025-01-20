@@ -17,21 +17,36 @@ package nas
 
 // 9.11.3.5 5GS network feature support [O TLV 3-5]
 type NetworkFeatureSupport struct {
-	bytes [2]byte
+	bytes     [3]byte
+	hasOctet1 bool
+	hasOctet2 bool
 }
 
 func (ie *NetworkFeatureSupport) encode() (wire []byte, err error) {
-	wire = ie.bytes[:]
+	encodeLen := 1
+	if ie.hasOctet1 {
+		encodeLen++
+	}
+	if ie.hasOctet2 {
+		encodeLen++
+	}
+	wire = ie.bytes[:encodeLen]
 	return
 }
 
 func (ie *NetworkFeatureSupport) decode(wire []byte) (err error) {
-	if len(wire) < 2 {
+	switch len(wire) {
+	case 0:
 		return ErrIncomplete
-	} else if len(wire) > 2 {
+	case 1:
+	case 2:
+		ie.hasOctet1 = true
+	case 3:
+		ie.hasOctet1 = true
+		ie.hasOctet2 = true
+	default:
 		return ErrTail
 	}
-
 	copy(ie.bytes[:], wire)
 	return
 }
@@ -40,6 +55,7 @@ func (ie *NetworkFeatureSupport) decode(wire []byte) (err error) {
 func (ie *NetworkFeatureSupport) GetMPSI() bool {
 	return getBit(ie.bytes[0], 7) == 1
 }
+
 func (ie *NetworkFeatureSupport) SetMPSI(f bool) {
 	if f {
 		ie.bytes[0] = setBit(ie.bytes[0], 7)
@@ -52,6 +68,7 @@ func (ie *NetworkFeatureSupport) SetMPSI(f bool) {
 func (ie *NetworkFeatureSupport) GetIWKN26() bool {
 	return getBit(ie.bytes[0], 6) == 1
 }
+
 func (ie *NetworkFeatureSupport) SetIWKN26(f bool) {
 	if f {
 		ie.bytes[0] = setBit(ie.bytes[0], 6)
@@ -81,8 +98,12 @@ func (ie *NetworkFeatureSupport) SetEMC(v uint8) {
 
 // octet 0, bit 1
 func (ie *NetworkFeatureSupport) GetIMSVoPSN3GPP() bool {
-	return getBit(ie.bytes[0], 1) == 1
+	if len(ie.bytes) > 1 {
+		return getBit(ie.bytes[0], 1) == 1
+	}
+	return false
 }
+
 func (ie *NetworkFeatureSupport) SetIMSVoPSN3GPP(f bool) {
 	if f {
 		ie.bytes[0] = setBit(ie.bytes[0], 1)
@@ -105,10 +126,14 @@ func (ie *NetworkFeatureSupport) SetIMSVoPS3GPP(f bool) {
 
 // octet 1, bit 1
 func (ie *NetworkFeatureSupport) GetMCSI() bool {
-	return getBit(ie.bytes[1], 1) == 1
+	if ie.hasOctet1 {
+		return getBit(ie.bytes[1], 1) == 1
+	}
+	return false
 }
 
 func (ie *NetworkFeatureSupport) SetMCSI(f bool) {
+	ie.hasOctet1 = true
 	if f {
 		ie.bytes[1] = setBit(ie.bytes[1], 1)
 	} else {
@@ -122,6 +147,7 @@ func (ie *NetworkFeatureSupport) GetEMCN() bool {
 }
 
 func (ie *NetworkFeatureSupport) SetEMCN(f bool) {
+	ie.hasOctet1 = true
 	if f {
 		ie.bytes[1] = setBit(ie.bytes[1], 0)
 	} else {
