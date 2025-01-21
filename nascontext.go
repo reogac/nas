@@ -152,16 +152,16 @@ func (ctx *NasContext) encrypt(payload []byte, isSending bool) (output []byte, e
 	direction, counter := ctx.getDirection(isSending)
 	switch ctx.encAlg {
 	case AlgCiphering128NEA0:
-		log.Debugf("Use NEA0")
+		//log.Debugf("Use NEA0")
 		output = payload
 	case AlgCiphering128NEA1:
-		log.Debugln("Use NEA1")
+		//log.Debugln("Use NEA1")
 		output, err = NEA1(ctx.encKey, counter, uint32(ctx.bearer), uint32(direction), payload, uint32(len(payload))*8)
 	case AlgCiphering128NEA2:
-		log.Debugln("Use NEA2")
+		//log.Debugln("Use NEA2")
 		output, err = NEA2(ctx.encKey, counter, ctx.bearer, direction, payload)
 	case AlgCiphering128NEA3:
-		log.Debugln("Use NEA3")
+		//log.Debugln("Use NEA3")
 		output, err = NEA3(ctx.encKey, counter, ctx.bearer, direction, payload, uint32(len(payload))*8)
 	default:
 		err = fmt.Errorf("Unknown Algorithm Identity[%d]", ctx.encAlg)
@@ -182,13 +182,13 @@ func (ctx *NasContext) calculateMac(payload []byte, isSending bool) (mac []byte,
 		//log.Warningln("Integrity NIA0 is emergency.")
 		mac = make([]byte, 4)
 	case AlgIntegrity128NIA1:
-		log.Debugf("Use NIA1")
+		//log.Debugf("Use NIA1")
 		mac, err = NIA1(ctx.intKey, counter, ctx.bearer, uint32(direction), payload, uint64(len(payload))*8)
 	case AlgIntegrity128NIA2:
-		log.Debugf("Use NIA2")
+		//log.Debugf("Use NIA2")
 		mac, err = NIA2(ctx.intKey, counter, ctx.bearer, direction, payload)
 	case AlgIntegrity128NIA3:
-		log.Debugf("Use NIA3")
+		//log.Debugf("Use NIA3")
 		mac, err = NIA3(ctx.intKey, counter, ctx.bearer, direction, payload, uint32(len(payload))*8)
 	default:
 		err = fmt.Errorf("Unknown Algorithm Identity[%d]", ctx.intAlg)
