@@ -17,7 +17,7 @@ package nas
 
 import (
 	"fmt"
-	"github.com/reogac/nas/sec"
+	"github.com/reogac/utils/sec5g"
 	"sync"
 )
 
@@ -108,7 +108,7 @@ func (ctx *NasContext) DeriveKeys(encAlg, intAlg uint8, kAmf []byte) (err error)
 	P1 := []byte{encAlg}
 
 	var kEnc, kInt []byte
-	if kEnc, err = sec.AlgKey(kAmf, P0, P1); err != nil {
+	if kEnc, err = sec5g.AlgKey(kAmf, P0, P1); err != nil {
 		return
 	}
 
@@ -116,7 +116,7 @@ func (ctx *NasContext) DeriveKeys(encAlg, intAlg uint8, kAmf []byte) (err error)
 	P0 = []byte{NNASIntAlg}
 	P1 = []byte{intAlg}
 
-	if kInt, err = sec.AlgKey(kAmf, P0, P1); err != nil {
+	if kInt, err = sec5g.AlgKey(kAmf, P0, P1); err != nil {
 		return
 	}
 	copy(ctx.encKey[:], kEnc[16:32])
