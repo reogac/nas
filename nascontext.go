@@ -83,14 +83,14 @@ func NewNasContext(isAmf bool, bearer uint8) *NasContext {
 }
 
 func (ctx *NasContext) UlCounter() uint32 {
-	if ctx.isAmf {
+	if !ctx.isAmf {
 		return uint32(ctx.localCounter)
 	}
 	return uint32(ctx.remoteCounter)
 }
 
 func (ctx *NasContext) DlCounter() uint32 {
-	if !ctx.isAmf {
+	if ctx.isAmf {
 		return uint32(ctx.localCounter)
 	}
 	return uint32(ctx.remoteCounter)
