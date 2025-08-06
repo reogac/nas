@@ -47,9 +47,9 @@ func (ie *AdditionalSecurityInformation) GetRetransmission() bool {
 
 func (ie *AdditionalSecurityInformation) SetRetransmission(flag bool) {
 	if flag {
-		setBit(ie.value, 1)
+		ie.value = setBit(ie.value, 1)
 	} else {
-		clearBit(ie.value, 1)
+		ie.value = clearBit(ie.value, 1)
 	}
 }
 func (ie *AdditionalSecurityInformation) GetHoDerivation() bool {
@@ -58,9 +58,9 @@ func (ie *AdditionalSecurityInformation) GetHoDerivation() bool {
 
 func (ie *AdditionalSecurityInformation) SetHoDerivation(flag bool) {
 	if flag {
-		setBit(ie.value, 0)
+		ie.value = setBit(ie.value, 0)
 	} else {
-		clearBit(ie.value, 0)
+		ie.value = clearBit(ie.value, 0)
 	}
 
 }
