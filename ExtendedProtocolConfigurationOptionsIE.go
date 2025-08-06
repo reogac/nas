@@ -50,32 +50,58 @@ func (ie *ExtendedProtocolConfigurationOptions) encode() (wire []byte, err error
 	return
 }
 
-func (ie *ExtendedProtocolConfigurationOptions) decode(wire []byte) (err error) {
+// inserted by shchoi
+const (
+	ReadingID = iota
+	ReadingLength
+)
+
+func (ie *ExtendedProtocolConfigurationOptions) decode(wire []byte) error {
 	if len(wire) < 1 {
-		err = ErrIncomplete
-		return
+		return ErrIncomplete
 	}
-	var unit PcoUnit
-	var unitLength int
-	offset := 1
+
+	offset := 1 // 첫 번째 바이트는 스킵 (PCO 헤더 등)
 	wireLen := len(wire)
+	readingState := ReadingID
+	var curUnit PcoUnit
+
 	for offset < wireLen {
-		if offset+3 > wireLen { //make sure we have Id and len of an unit
-			err = ErrIncomplete
-			return
+		switch readingState {
+		case ReadingID:
+			if offset+2 > wireLen {
+				return ErrIncomplete
+			}
+			curUnit = PcoUnit{} // 새 유닛 초기화
+			curUnit.Id = binary.BigEndian.Uint16(wire[offset : offset+2])
+			offset += 2
+			readingState = ReadingLength
+
+		case ReadingLength:
+			if offset+1 > wireLen {
+				return ErrIncomplete
+			}
+			unitLength := int(wire[offset])
+			offset += 1
+
+			if unitLength == 0 {
+				curUnit.Content = []byte{}
+				ie.units = append(ie.units, curUnit)
+				readingState = ReadingID
+			} else {
+				if offset+unitLength > wireLen {
+					return ErrIncomplete
+				}
+				curUnit.Content = make([]byte, unitLength)
+				copy(curUnit.Content, wire[offset:offset+unitLength])
+				offset += unitLength
+				ie.units = append(ie.units, curUnit)
+				readingState = ReadingID
+			}
 		}
-		unit.Id = binary.BigEndian.Uint16(wire[offset : offset+2])
-		unitLength = int(wire[offset+2])
-		offset += 3
-		if offset+unitLength > wireLen {
-			err = ErrIncomplete
-			return
-		}
-		unit.Content = make([]byte, unitLength)
-		copy(unit.Content, wire[offset:offset+unitLength])
-		ie.units = append(ie.units, unit)
 	}
-	return
+
+	return nil
 }
 
 type PcoUnit struct {
