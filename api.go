@@ -58,7 +58,7 @@ func EncodeSm(msg GsmMessage) (wire []byte, err error) {
 	return
 }
 
-func EncodeMm(ctx *NasContext, msg GmmMessage) (wire []byte, err error) {
+func EncodeMm(ctx *NasContext, msg GmmMessage, isGpp bool) (wire []byte, err error) {
 	secType := msg.GetSecurityHeader()
 	if ctx == nil && secType != NasSecNone {
 		err = fmt.Errorf("No security context to encode protected NasMm message")
@@ -97,10 +97,10 @@ func EncodeMm(ctx *NasContext, msg GmmMessage) (wire []byte, err error) {
 		err = fmt.Errorf("Wrong security header type: 0x%0x", secType)
 		return
 	}
-
+	bearer := getBearer(isGpp)
 	if ciphering {
 		//log.Tracef("Encode message type %d with counter = %d\n", wire[2], ctx.localCounter)
-		if wire, err = ctx.encrypt(wire, true); err != nil {
+		if wire, err = ctx.encrypt(wire, true, bearer); err != nil {
 			err = nasError("fail to encryp MM", err)
 			return
 		}
@@ -109,7 +109,7 @@ func EncodeMm(ctx *NasContext, msg GmmMessage) (wire []byte, err error) {
 	wire = append(secHeader, wire...)
 
 	var mac32 []byte
-	if mac32, err = ctx.calculateMac(wire[6:], true); err != nil {
+	if mac32, err = ctx.calculateMac(wire[6:], true, bearer); err != nil {
 		err = nasError("fail to build MAC for MM", err)
 		return
 	}
@@ -122,20 +122,22 @@ func EncodeMm(ctx *NasContext, msg GmmMessage) (wire []byte, err error) {
 	return
 }
 
-func (ctx *NasContext) EncryptMmContainer(plain []byte) (cipher []byte, err error) {
-	cipher, err = ctx.encrypt(plain, true) //for sending
+func (ctx *NasContext) EncryptMmContainer(plain []byte, isGpp bool) (cipher []byte, err error) {
+	bearer := getBearer(isGpp)
+	cipher, err = ctx.encrypt(plain, true, bearer) //for sending
 	return
 }
 
-func (ctx *NasContext) DecodeMmContainer(wire []byte) (gmm DecodedGmmMessage, err error) {
-	if wire, err = ctx.encrypt(wire, false); err == nil { //for receiving
+func (ctx *NasContext) DecodeMmContainer(wire []byte, isGpp bool) (gmm DecodedGmmMessage, err error) {
+	bearer := getBearer(isGpp)
+	if wire, err = ctx.encrypt(wire, false, bearer); err == nil { //for receiving
 		err = nasError("fail to decrypt MM container", err)
 		gmm, err = decodePlainMm(wire)
 	}
 	return
 }
 
-func Decode(ctx *NasContext, wire []byte) (nasMsg NasMessage, err error) {
+func Decode(ctx *NasContext, wire []byte, isGpp bool) (nasMsg NasMessage, err error) {
 	//get message type SM or MM
 	wireLen := len(wire)
 	if wireLen < 3 {
@@ -145,7 +147,7 @@ func Decode(ctx *NasContext, wire []byte) (nasMsg NasMessage, err error) {
 	switch wire[0] { //epd value; first byte
 	case EPD_5GMM: //mobility management message
 		var gmm DecodedGmmMessage
-		if gmm, err = decodeMm(ctx, wire); err == nil {
+		if gmm, err = decodeMm(ctx, wire, isGpp); err == nil {
 			nasMsg.Gmm = &gmm
 		} else {
 			err = nasError("decode NasMm", err)
@@ -165,7 +167,7 @@ func Decode(ctx *NasContext, wire []byte) (nasMsg NasMessage, err error) {
 }
 
 // wire length is not less than 3 (checked in previous step)
-func decodeMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err error) {
+func decodeMm(ctx *NasContext, wire []byte, isGpp bool) (gmm DecodedGmmMessage, err error) {
 	//must have a header
 
 	//get security header type
@@ -190,7 +192,7 @@ func decodeMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err error) {
 		return
 
 	case NasSecIntegrity, NasSecIntegrityNew, NasSecBoth, NasSecBothNew:
-		if gmm, err = decodeProtectedMm(ctx, wire); err != nil {
+		if gmm, err = decodeProtectedMm(ctx, wire, isGpp); err != nil {
 			err = nasError("decode protected nas", err)
 		}
 	default:
@@ -199,7 +201,7 @@ func decodeMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err error) {
 	return
 }
 
-func decodeProtectedMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err error) {
+func decodeProtectedMm(ctx *NasContext, wire []byte, isGpp bool) (gmm DecodedGmmMessage, err error) {
 	// message is security protected
 	if len(wire) < 6 {
 		err = ErrIncomplete
@@ -261,9 +263,9 @@ func decodeProtectedMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err
 		}
 		ctx.remoteCounter.setSqn(seqNum)
 	}
-
+	bearer := getBearer(isGpp)
 	var mac32 []byte
-	if mac32, err = ctx.calculateMac(wire, false); err != nil {
+	if mac32, err = ctx.calculateMac(wire, false, bearer); err != nil {
 		err = nasError("fail to calculate message authentication code", err)
 		return
 	}
@@ -287,7 +289,7 @@ func decodeProtectedMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err
 	//integrity-check passed
 	if ciphered {
 		// decrypt payload without sequence number (payload[1])
-		if wire, err = ctx.encrypt(wire[1:], false); err != nil { //remove sequence number
+		if wire, err = ctx.encrypt(wire[1:], false, bearer); err != nil { //remove sequence number
 			err = nasError("fail to decrypt message", err)
 			return
 		}
@@ -301,4 +303,12 @@ func decodeProtectedMm(ctx *NasContext, wire []byte) (gmm DecodedGmmMessage, err
 	gmm.MacFailed = false
 
 	return
+}
+
+func getBearer(isGpp bool) uint8 {
+	if isGpp {
+		return Bearer3GPP
+	}
+	return BearerNon3GPP
+
 }

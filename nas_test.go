@@ -49,12 +49,12 @@ func Test_NasEncoding(t *testing.T) {
 	*msg.PayloadContainerType = 1
 	*msg.EpsBearerContextStatus = 100
 	msg.SetSecurityHeader(0)
-	if buf, err := EncodeMm(nil, msg); err != nil {
+	if buf, err := EncodeMm(nil, msg, true); err != nil {
 		t.Errorf("Encode fail: %+v", err)
 		return
 	} else {
 		var nasMsg NasMessage
-		if nasMsg, err = Decode(nil, buf); err != nil {
+		if nasMsg, err = Decode(nil, buf, true); err != nil {
 			t.Errorf("Decode fail: %s", err.Error())
 			return
 		}

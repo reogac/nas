@@ -67,17 +67,14 @@ type NasContext struct {
 	intAlg        uint8     //integrity protection algorithm
 	intKey        [16]uint8 //integrity protection key
 	encKey        [16]uint8 //encryption key
-	bearer        uint8
 	emergency     bool
 	isAmf         bool
 	mutex         sync.Mutex
 }
 
-func NewNasContext(isAmf bool, bearer uint8) *NasContext {
+func NewNasContext(isAmf bool) *NasContext {
 	ctx := &NasContext{
-		//emergency: true,
-		bearer: bearer,
-		isAmf:  isAmf,
+		isAmf: isAmf,
 	}
 	return ctx
 }
@@ -145,7 +142,7 @@ func (ctx *NasContext) getDirection(isSending bool) (direction uint8, counter ui
 	return
 }
 
-func (ctx *NasContext) encrypt(payload []byte, isSending bool) (output []byte, err error) {
+func (ctx *NasContext) encrypt(payload []byte, isSending bool, bearer uint8) (output []byte, err error) {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
 
@@ -156,13 +153,13 @@ func (ctx *NasContext) encrypt(payload []byte, isSending bool) (output []byte, e
 		output = payload
 	case AlgCiphering128NEA1:
 		//log.Debugln("Use NEA1")
-		output, err = NEA1(ctx.encKey, counter, uint32(ctx.bearer), uint32(direction), payload, uint32(len(payload))*8)
+		output, err = NEA1(ctx.encKey, counter, uint32(bearer), uint32(direction), payload, uint32(len(payload))*8)
 	case AlgCiphering128NEA2:
 		//log.Debugln("Use NEA2")
-		output, err = NEA2(ctx.encKey, counter, ctx.bearer, direction, payload)
+		output, err = NEA2(ctx.encKey, counter, bearer, direction, payload)
 	case AlgCiphering128NEA3:
 		//log.Debugln("Use NEA3")
-		output, err = NEA3(ctx.encKey, counter, ctx.bearer, direction, payload, uint32(len(payload))*8)
+		output, err = NEA3(ctx.encKey, counter, bearer, direction, payload, uint32(len(payload))*8)
 	default:
 		err = fmt.Errorf("Unknown Algorithm Identity[%d]", ctx.encAlg)
 	}
@@ -172,7 +169,7 @@ func (ctx *NasContext) encrypt(payload []byte, isSending bool) (output []byte, e
 	return
 }
 
-func (ctx *NasContext) calculateMac(payload []byte, isSending bool) (mac []byte, err error) {
+func (ctx *NasContext) calculateMac(payload []byte, isSending bool, bearer uint8) (mac []byte, err error) {
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
 
@@ -183,13 +180,13 @@ func (ctx *NasContext) calculateMac(payload []byte, isSending bool) (mac []byte,
 		mac = make([]byte, 4)
 	case AlgIntegrity128NIA1:
 		//log.Debugf("Use NIA1")
-		mac, err = NIA1(ctx.intKey, counter, ctx.bearer, uint32(direction), payload, uint64(len(payload))*8)
+		mac, err = NIA1(ctx.intKey, counter, bearer, uint32(direction), payload, uint64(len(payload))*8)
 	case AlgIntegrity128NIA2:
 		//log.Debugf("Use NIA2")
-		mac, err = NIA2(ctx.intKey, counter, ctx.bearer, direction, payload)
+		mac, err = NIA2(ctx.intKey, counter, bearer, direction, payload)
 	case AlgIntegrity128NIA3:
 		//log.Debugf("Use NIA3")
-		mac, err = NIA3(ctx.intKey, counter, ctx.bearer, direction, payload, uint32(len(payload))*8)
+		mac, err = NIA3(ctx.intKey, counter, bearer, direction, payload, uint32(len(payload))*8)
 	default:
 		err = fmt.Errorf("Unknown Algorithm Identity[%d]", ctx.intAlg)
 	}

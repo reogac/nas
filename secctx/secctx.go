@@ -32,8 +32,7 @@ type SecurityContext struct {
 	isAmf bool
 
 	//NAS contexts
-	gppNas    *nas.NasContext
-	nonGppNas *nas.NasContext
+	nasCtx *nas.NasContext
 
 	ngKsi nas.KeySetIdentifier
 	kamf  []byte
@@ -48,11 +47,10 @@ type SecurityContext struct {
 
 func NewSecurityContext(ksi *nas.KeySetIdentifier, kamf []byte, isAmf bool) *SecurityContext {
 	ctx := &SecurityContext{
-		ngKsi:     *ksi,
-		isAmf:     isAmf,
-		kamf:      make([]byte, len(kamf)),
-		gppNas:    nas.NewNasContext(isAmf, nas.Bearer3GPP),
-		nonGppNas: nas.NewNasContext(isAmf, nas.BearerNon3GPP),
+		ngKsi:  *ksi,
+		isAmf:  isAmf,
+		kamf:   make([]byte, len(kamf)),
+		nasCtx: nas.NewNasContext(isAmf),
 	}
 	copy(ctx.kamf, kamf)
 	return ctx
@@ -62,11 +60,8 @@ func (ctx *SecurityContext) NgKsi() *nas.KeySetIdentifier {
 	return &ctx.ngKsi
 }
 
-func (ctx *SecurityContext) NasContext(isGpp bool) *nas.NasContext {
-	if isGpp {
-		return ctx.gppNas
-	}
-	return ctx.nonGppNas
+func (ctx *SecurityContext) NasContext() *nas.NasContext {
+	return ctx.nasCtx
 }
 
 func (ctx *SecurityContext) MatchNgKsi(ngksi *nas.KeySetIdentifier) bool {
@@ -91,12 +86,12 @@ func (ctx *SecurityContext) createAnKey() (err error) {
 	P0 := make([]byte, 4)
 	P1 := []byte{nas.AccessType3GPP}
 
-	binary.BigEndian.PutUint32(P0, uint32(ctx.gppNas.UlCounter()))
+	binary.BigEndian.PutUint32(P0, uint32(ctx.nasCtx.UlCounter()))
 	if ctx.kgnb, err = sec5g.RanKey(ctx.kamf, P0, P1); err != nil {
 		return
 	}
 	P1[0] = nas.AccessTypeNon3GPP
-	binary.BigEndian.PutUint32(P0, uint32(ctx.nonGppNas.UlCounter()))
+	binary.BigEndian.PutUint32(P0, uint32(ctx.nasCtx.UlCounter()))
 	ctx.kn3iwf, err = sec5g.RanKey(ctx.kamf, P0, P1)
 	return
 }
@@ -141,12 +136,12 @@ func (ctx *SecurityContext) DeriveNasKeys(encAlg, intAlg, hdp uint8) (err error)
 		p0, _ = hex.DecodeString("01")
 		//NOTE: p1 = dlcount is only applied for 3gpp access (not sure about
 		//non-3gpp (see TS 133.501 A.13)
-		binary.BigEndian.PutUint32(p1[:], uint32(ctx.gppNas.DlCounter()))
+		binary.BigEndian.PutUint32(p1[:], uint32(ctx.nasCtx.DlCounter()))
 		kamf, err = sec5g.KamfPrime(ctx.kamf, p0, p1[:])
 	case HDP_MOBILITY_UPDATE:
 		//derive kamf prime
 		p0, _ = hex.DecodeString("00")
-		binary.BigEndian.PutUint32(p1[:], uint32(ctx.gppNas.UlCounter()))
+		binary.BigEndian.PutUint32(p1[:], uint32(ctx.nasCtx.UlCounter()))
 		kamf, err = sec5g.KamfPrime(ctx.kamf, p0, p1[:])
 	default:
 		kamf = ctx.kamf
@@ -155,11 +150,7 @@ func (ctx *SecurityContext) DeriveNasKeys(encAlg, intAlg, hdp uint8) (err error)
 		return
 	}
 	//then derive key for nas contexts
-	if err = ctx.gppNas.DeriveKeys(encAlg, intAlg, kamf); err != nil {
-		return
-	}
-
-	if err = ctx.nonGppNas.DeriveKeys(encAlg, intAlg, kamf); err != nil {
+	if err = ctx.nasCtx.DeriveKeys(encAlg, intAlg, kamf); err != nil {
 		return
 	}
 	ctx.kamf = kamf
