@@ -62,7 +62,8 @@ const (
 
 type NasContext struct {
 	localCounter  Counter   //sending NAS counter
-	remoteCounter Counter   //receiving NAS counter
+	remoteCounter Counter   //receiving NAS counter: the largest COUNT a received message verified with
+	remoteSeen    bool      //whether a received message has verified since the keys were derived
 	encAlg        uint8     //encryption algorithm
 	intAlg        uint8     //integrity protection algorithm
 	intKey        [16]uint8 //integrity protection key
@@ -120,6 +121,7 @@ func (ctx *NasContext) DeriveKeys(encAlg, intAlg uint8, kAmf []byte) (err error)
 	copy(ctx.intKey[:], kInt[16:32])
 	ctx.localCounter.set(0, 0)
 	ctx.remoteCounter.set(0, 0)
+	ctx.remoteSeen = false
 	return
 }
 
@@ -147,6 +149,12 @@ func (ctx *NasContext) encrypt(payload []byte, isSending bool, bearer uint8) (ou
 	defer ctx.mutex.Unlock()
 
 	direction, counter := ctx.getDirection(isSending)
+	return ctx.cipher(payload, direction, counter, bearer)
+}
+
+// cipher runs the ciphering algorithm with an explicit COUNT; the caller holds
+// the mutex
+func (ctx *NasContext) cipher(payload []byte, direction uint8, counter uint32, bearer uint8) (output []byte, err error) {
 	switch ctx.encAlg {
 	case AlgCiphering128NEA0:
 		//log.Debugf("Use NEA0")
@@ -174,6 +182,12 @@ func (ctx *NasContext) calculateMac(payload []byte, isSending bool, bearer uint8
 	defer ctx.mutex.Unlock()
 
 	direction, counter := ctx.getDirection(isSending)
+	return ctx.mac(payload, direction, counter, bearer)
+}
+
+// mac computes the message authentication code with an explicit COUNT; the
+// caller holds the mutex
+func (ctx *NasContext) mac(payload []byte, direction uint8, counter uint32, bearer uint8) (mac []byte, err error) {
 	switch ctx.intAlg {
 	case AlgIntegrity128NIA0:
 		//log.Warningln("Integrity NIA0 is emergency.")

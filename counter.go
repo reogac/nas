@@ -69,3 +69,18 @@ func (c *Counter) overflow() uint16 {
 func (c *Counter) setOverflow(overflow uint16) {
 	*c = Counter((uint32(*c) & 0xff0000ff) | (uint32(overflow) << 8))
 }
+
+// estimate returns the COUNT a received message carrying sqn was protected
+// with, given c the largest COUNT a received message has verified with (TS
+// 24.501 4.4.3.1). The overflow is kept for an sqn above the stored one and
+// bumped otherwise, so an old sqn stands for a COUNT that is higher than any
+// accepted: a replayed message fails its integrity check rather than verifying
+// a second time. With nothing received yet, sqn is taken at the stored
+// overflow.
+func (c Counter) estimate(sqn uint8, seen bool) Counter {
+	overflow := c.overflow()
+	if seen && sqn <= c.sqn() {
+		overflow++
+	}
+	return newCounter(overflow, sqn)
+}
