@@ -148,23 +148,153 @@ func TestNewContextHeaderOnUsedContextIsRefused(t *testing.T) {
 	}
 }
 
-func TestEstimate(t *testing.T) {
-	stored := newCounter(3, 200)
+// sealed returns the UE's uplinks 0..n-1, protected in order, for the test to
+// deliver in any order it likes.
+func sealed(t *testing.T, ue *NasContext, n int) [][]byte {
+	out := make([][]byte, n)
+	out[0] = uplink(t, ue, NasSecBothNew)
+	for i := 1; i < n; i++ {
+		out[i] = uplink(t, ue, NasSecBoth)
+	}
+	return out
+}
+
+// A message overtaken by the one sent after it still verifies, once: the hops
+// between the gNB and the AMF may deliver a little out of order, and a
+// Registration Complete overtaken by the next uplink used to be refused as a
+// replay, hanging the registration on T3550.
+func TestAReorderedUplinkIsAcceptedOnce(t *testing.T) {
+	ue, amf := peers(t)
+	msgs := sealed(t, ue, 4)
+	for i, k := range []int{0, 2, 1, 3} {
+		if !verified(amf, msgs[k]) {
+			t.Fatalf("delivery %d (message %d) did not verify", i, k)
+		}
+	}
+	for k := range msgs {
+		if verified(amf, msgs[k]) {
+			t.Errorf("message %d verified a second time", k)
+		}
+	}
+	if got, want := amf.UlCounter(), uint32(3); got != want {
+		t.Errorf("uplink COUNT %d after a late message, want the highest, %d", got, want)
+	}
+}
+
+// A message later than the window is refused: it is indistinguishable from a
+// replay of one the window has forgotten.
+func TestAnUplinkOlderThanTheWindowIsRefused(t *testing.T) {
+	ue, amf := peers(t)
+	msgs := sealed(t, ue, REPLAY_WINDOW+3)
+	verified(amf, msgs[0])
+	late := msgs[1]
+	for _, m := range msgs[2:] {
+		if !verified(amf, m) {
+			t.Fatal("an in-order message did not verify")
+		}
+	}
+	if verified(amf, late) {
+		t.Errorf("a message %d behind the highest verified", REPLAY_WINDOW+1)
+	}
+}
+
+// The last message inside the window is still accepted.
+func TestTheWindowsOldestSlotIsAccepted(t *testing.T) {
+	ue, amf := peers(t)
+	msgs := sealed(t, ue, REPLAY_WINDOW+2)
+	verified(amf, msgs[0])
+	late := msgs[1]
+	for _, m := range msgs[2:] {
+		verified(amf, m)
+	}
+	//highest is REPLAY_WINDOW+1, and message 1 is REPLAY_WINDOW below it
+	if !verified(amf, late) {
+		t.Errorf("a message %d behind the highest was refused", REPLAY_WINDOW)
+	}
+}
+
+// A forged message leaves the window as it was: a late message it pretends to
+// be is still accepted afterwards, and so is the next one.
+func TestAForgedUplinkLeavesTheWindowUnchanged(t *testing.T) {
+	ue, amf := peers(t)
+	msgs := sealed(t, ue, 4)
+	for _, k := range []int{0, 1, 3} {
+		verified(amf, msgs[k])
+	}
+	before := amf.remote
+	forged := append([]byte(nil), msgs[2]...)
+	forged[2] ^= 0xff
+	if verified(amf, forged) {
+		t.Fatal("forged message verified")
+	}
+	if amf.remote != before {
+		t.Errorf("window moved from %+v to %+v on a message that failed its check", before, amf.remote)
+	}
+	if !verified(amf, msgs[2]) {
+		t.Error("the real late message was refused after a forgery of it")
+	}
+}
+
+// Past an sqn wrap, the window still spans the old overflow.
+func TestTheWindowSpansAnOverflow(t *testing.T) {
+	ue, amf := peers(t)
+	msgs := sealed(t, ue, 260)
+	for k := 0; k < 255; k++ {
+		verified(amf, msgs[k])
+	}
+	//255 overtaken by 256 and 257, which carry the next overflow
+	for _, k := range []int{256, 257, 255, 258} {
+		if !verified(amf, msgs[k]) {
+			t.Fatalf("message %d did not verify", k)
+		}
+	}
+	if verified(amf, msgs[255]) {
+		t.Error("the late message across the wrap verified twice")
+	}
+}
+
+// A container a late message carries is ciphered with that message's COUNT,
+// not with the highest: the decode keeps the COUNT it verified with.
+func TestTheLastCountIsTheLateMessages(t *testing.T) {
+	ue, amf := peers(t)
+	msgs := sealed(t, ue, 3)
+	for _, k := range []int{0, 2, 1} {
+		verified(amf, msgs[k])
+	}
+	if amf.remoteLast != newCounter(0, 1) || amf.remote.highest != newCounter(0, 2) {
+		t.Errorf("last %d highest %d, want 1 and 2", amf.remoteLast, amf.remote.highest)
+	}
+}
+
+func TestCandidates(t *testing.T) {
+	w := replayWindow{highest: newCounter(3, 200), seen: true, used: 1 << 1} //COUNT (3,198) used
 	cases := []struct {
-		sqn  uint8
-		seen bool
-		want Counter
+		sqn     uint8
+		ahead   Counter
+		late    Counter
+		hasLate bool
 	}{
-		{201, true, newCounter(3, 201)},
-		{255, true, newCounter(3, 255)},
-		{200, true, newCounter(4, 200)},
-		{199, true, newCounter(4, 199)},
-		{0, true, newCounter(4, 0)},
-		{5, false, newCounter(3, 5)},
+		{201, newCounter(3, 201), 0, false},
+		{200, newCounter(4, 200), 0, false},                 //the highest itself
+		{199, newCounter(4, 199), newCounter(3, 199), true}, //just below
+		{198, newCounter(4, 198), 0, false},                 //already used
+		{168, newCounter(4, 168), newCounter(3, 168), true}, //the window's edge
+		{167, newCounter(4, 167), 0, false},                 //past it
 	}
 	for _, c := range cases {
-		if got := stored.estimate(c.sqn, c.seen); got != c.want {
-			t.Errorf("estimate(%d, %v) = %d, want %d", c.sqn, c.seen, got, c.want)
+		ahead, late, hasLate := w.candidates(c.sqn)
+		if ahead != c.ahead || hasLate != c.hasLate || (hasLate && late != c.late) {
+			t.Errorf("candidates(%d) = %d, %d, %v; want %d, %d, %v",
+				c.sqn, ahead, late, hasLate, c.ahead, c.late, c.hasLate)
 		}
+	}
+	fresh := replayWindow{}
+	if ahead, _, hasLate := fresh.candidates(5); ahead != newCounter(0, 5) || hasLate {
+		t.Errorf("a fresh window read sqn 5 as %d (late %v)", ahead, hasLate)
+	}
+	//sqn above the highest at overflow 0 has nothing below COUNT 0 to be late for
+	low := replayWindow{highest: newCounter(0, 3), seen: true}
+	if _, _, hasLate := low.candidates(9); hasLate {
+		t.Error("a COUNT below 0 was offered as late")
 	}
 }

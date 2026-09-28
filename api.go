@@ -244,26 +244,44 @@ func decodeProtectedMm(ctx *NasContext, wire []byte, isGpp bool) (gmm DecodedGmm
 		gmm.MacFailed = true
 		return
 	}
-	//now, there must be a security context to decode. The COUNT is estimated
-	//without being stored, and becomes the stored one only once the message
-	//verifies: a message that fails the check must leave the counter where it
-	//was, or a single forged message would desynchronize it and fail every
-	//later message from the real peer (TS 24.501 4.4.3.1). A message notifying
-	//a new security context needs no special case: the context has just been
-	//keyed and received nothing, so its sqn is taken as is
+	//now, there must be a security context to decode. Which COUNT the message
+	//was protected with is worked out without storing anything, and recorded
+	//only once the message verifies: a message that fails the check must leave
+	//the counter where it was, or a single forged message would desynchronize
+	//it and fail every later message from the real peer (TS 24.501 4.4.3.1). A
+	//message notifying a new security context needs no special case: the
+	//context has just been keyed and received nothing, so its sqn is taken as is
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
 	direction, _ := ctx.getDirection(false)
-	count := ctx.remoteCounter.estimate(seqNum, ctx.remoteSeen)
-
 	bearer := getBearer(isGpp)
+
+	//a late message is the likelier reading of an sqn just below the highest,
+	//so it is tried first; a forgery pays for the second check, the peer never
+	ahead, late, hasLate := ctx.remote.candidates(seqNum)
+	var tries [2]Counter
+	n := 0
+	if hasLate {
+		tries[n] = late
+		n++
+	}
+	tries[n] = ahead
+	n++
+	var count Counter
+	verified := false
 	var mac32 []byte
-	if mac32, err = ctx.mac(wire, direction, uint32(count), bearer); err != nil {
-		err = nasError("fail to calculate message authentication code", err)
-		return
+	for _, c := range tries[:n] {
+		if mac32, err = ctx.mac(wire, direction, uint32(c), bearer); err != nil {
+			err = nasError("fail to calculate message authentication code", err)
+			return
+		}
+		if bytes.Equal(mac32, rmac32) {
+			count, verified = c, true
+			break
+		}
 	}
 
-	if !bytes.Equal(mac32, rmac32) { //integrity check fails
+	if !verified { //integrity check fails
 		if ciphered {
 			err = fmt.Errorf("Integrity check not passed:%x-%x", mac32, rmac32)
 		} else {
@@ -280,8 +298,8 @@ func decodeProtectedMm(ctx *NasContext, wire []byte, isGpp bool) (gmm DecodedGmm
 	}
 
 	//integrity-check passed: the COUNT is used, and no later message may reuse it
-	ctx.remoteCounter = count
-	ctx.remoteSeen = true
+	ctx.remote.accept(count)
+	ctx.remoteLast = count
 	if ciphered {
 		// decrypt payload without sequence number (payload[1])
 		if wire, err = ctx.cipher(wire[1:], direction, uint32(count), bearer); err != nil { //remove sequence number

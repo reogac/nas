@@ -61,16 +61,19 @@ const (
 )
 
 type NasContext struct {
-	localCounter  Counter   //sending NAS counter
-	remoteCounter Counter   //receiving NAS counter: the largest COUNT a received message verified with
-	remoteSeen    bool      //whether a received message has verified since the keys were derived
-	encAlg        uint8     //encryption algorithm
-	intAlg        uint8     //integrity protection algorithm
-	intKey        [16]uint8 //integrity protection key
-	encKey        [16]uint8 //encryption key
-	emergency     bool
-	isAmf         bool
-	mutex         sync.Mutex
+	localCounter Counter      //sending NAS counter
+	remote       replayWindow //receiving NAS counter: the COUNTs received messages verified with
+	//remoteLast is the COUNT the most recently verified message was protected
+	//with, which a NAS container it carried is ciphered with. It is the highest
+	//except when that message arrived late
+	remoteLast Counter
+	encAlg     uint8     //encryption algorithm
+	intAlg     uint8     //integrity protection algorithm
+	intKey     [16]uint8 //integrity protection key
+	encKey     [16]uint8 //encryption key
+	emergency  bool
+	isAmf      bool
+	mutex      sync.Mutex
 }
 
 func NewNasContext(isAmf bool) *NasContext {
@@ -84,14 +87,14 @@ func (ctx *NasContext) UlCounter() uint32 {
 	if !ctx.isAmf {
 		return uint32(ctx.localCounter)
 	}
-	return uint32(ctx.remoteCounter)
+	return uint32(ctx.remote.highest)
 }
 
 func (ctx *NasContext) DlCounter() uint32 {
 	if ctx.isAmf {
 		return uint32(ctx.localCounter)
 	}
-	return uint32(ctx.remoteCounter)
+	return uint32(ctx.remote.highest)
 }
 
 func (ctx *NasContext) SelectedAlgorithms() (uint8, uint8) {
@@ -120,8 +123,8 @@ func (ctx *NasContext) DeriveKeys(encAlg, intAlg uint8, kAmf []byte) (err error)
 	copy(ctx.encKey[:], kEnc[16:32])
 	copy(ctx.intKey[:], kInt[16:32])
 	ctx.localCounter.set(0, 0)
-	ctx.remoteCounter.set(0, 0)
-	ctx.remoteSeen = false
+	ctx.remote.reset()
+	ctx.remoteLast = 0
 	return
 }
 
@@ -139,7 +142,7 @@ func (ctx *NasContext) getDirection(isSending bool) (direction uint8, counter ui
 		} else {
 			direction = DirectionDownlink
 		}
-		counter = uint32(ctx.remoteCounter)
+		counter = uint32(ctx.remoteLast)
 	}
 	return
 }
