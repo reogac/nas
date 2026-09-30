@@ -55,3 +55,31 @@ func Test_UeSecurityCapability(t *testing.T) {
 	}
 
 }
+
+// A UE may send the capability with its two 5GS octets alone. Reading or
+// setting an E-UTRA algorithm on one indexed past its end.
+func Test_UeSecurityCapabilityWithoutEutraOctets(t *testing.T) {
+	secCap := &UeSecurityCapability{}
+	if err := secCap.decode([]byte{0xf0, 0x70}); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	for i := uint8(0); i < 8; i++ {
+		if secCap.GetEEA(i) || secCap.GetEIA(i) {
+			t.Errorf("a two-octet capability reports E-UTRA algorithm %d", i)
+		}
+	}
+	if !secCap.GetEA(1) || !secCap.GetIA(1) {
+		t.Errorf("the 5GS octets were not read")
+	}
+	if wire := secCap.Bytes(); len(wire) != 2 {
+		t.Errorf("an untouched two-octet capability encodes as % x", wire)
+	}
+
+	secCap.SetEEA(2, true)
+	if !secCap.GetEEA(2) {
+		t.Errorf("EEA2 was not set")
+	}
+	if wire := secCap.Bytes(); len(wire) != 4 || wire[0] != 0xf0 || wire[1] != 0x70 || wire[2] != 0x20 {
+		t.Errorf("with EEA2 set it encodes as % x, want f0 70 20 00", wire)
+	}
+}

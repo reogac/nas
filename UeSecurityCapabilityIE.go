@@ -59,11 +59,9 @@ func (ie *UeSecurityCapability) getBit(row uint8, pos uint8) bool {
 		return false
 	}
 
-	if row > 4 {
-		return false
-	}
-
-	if int(row) > len(ie.bytes) {
+	//four rows of algorithms, and only those the UE sent: the E-UTRA rows are
+	//optional, and a two-octet capability indexed past its end here
+	if row >= 4 || int(row) >= len(ie.bytes) {
 		return false
 	}
 
@@ -75,8 +73,13 @@ func (ie *UeSecurityCapability) setBit(row uint8, pos uint8, v bool) {
 		return //ignore
 	}
 
-	if len(ie.bytes) == 0 {
-		ie.bytes = make([]byte, 4) //always make 4 bytes, discard the last two if needed in encoding
+	//always four rows, discarding the last two if needed in encoding. A
+	//decoded two-octet capability is widened too, or setting one of its
+	//E-UTRA rows indexed past its end
+	if len(ie.bytes) < 4 {
+		buf := make([]byte, 4)
+		copy(buf, ie.bytes)
+		ie.bytes = buf
 	}
 
 	if v {
