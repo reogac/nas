@@ -107,7 +107,7 @@ func EncodeMm(ctx *NasContext, msg GmmMessage, isGpp bool) (wire []byte, err err
 			return
 		}
 	}
-	secHeader := []byte{EPD_5GMM, secType, 0, 0, 0, 0, ctx.localCounter.sqn()}
+	secHeader := []byte{EPD_5GMM, secType, 0, 0, 0, 0, ctx.pair(bearer).local.sqn()}
 	wire = append(secHeader, wire...)
 
 	var mac32 []byte
@@ -119,7 +119,7 @@ func EncodeMm(ctx *NasContext, msg GmmMessage, isGpp bool) (wire []byte, err err
 	copy(wire[2:], mac32[0:4])
 
 	// Increase local counter
-	ctx.localCounter.inc()
+	ctx.pair(bearer).local.inc()
 
 	return
 }
@@ -255,12 +255,13 @@ func decodeProtectedMm(ctx *NasContext, wire []byte, isGpp bool) (gmm DecodedGmm
 	//context has just been keyed and received nothing, so its sqn is taken as is
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
-	direction, _ := ctx.getDirection(false)
 	bearer := getBearer(isGpp)
+	direction, _ := ctx.getDirection(false, bearer)
+	pair := ctx.pair(bearer)
 
 	//a late message is the likelier reading of an sqn just below the highest,
 	//so it is tried first; a forgery pays for the second check, the peer never
-	ahead, late, hasLate := ctx.remote.candidates(seqNum)
+	ahead, late, hasLate := pair.remote.candidates(seqNum)
 	var tries [2]Counter
 	n := 0
 	if hasLate {
@@ -300,8 +301,8 @@ func decodeProtectedMm(ctx *NasContext, wire []byte, isGpp bool) (gmm DecodedGmm
 	}
 
 	//integrity-check passed: the COUNT is used, and no later message may reuse it
-	ctx.remote.accept(count)
-	ctx.remoteLast = count
+	pair.remote.accept(count)
+	pair.remoteLast = count
 	if ciphered {
 		// decrypt payload without sequence number (payload[1])
 		if wire, err = ctx.cipher(wire[1:], direction, uint32(count), bearer); err != nil { //remove sequence number

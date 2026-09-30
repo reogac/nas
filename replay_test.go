@@ -221,14 +221,14 @@ func TestAForgedUplinkLeavesTheWindowUnchanged(t *testing.T) {
 	for _, k := range []int{0, 1, 3} {
 		verified(amf, msgs[k])
 	}
-	before := amf.remote
+	before := amf.pairs[0].remote
 	forged := append([]byte(nil), msgs[2]...)
 	forged[2] ^= 0xff
 	if verified(amf, forged) {
 		t.Fatal("forged message verified")
 	}
-	if amf.remote != before {
-		t.Errorf("window moved from %+v to %+v on a message that failed its check", before, amf.remote)
+	if amf.pairs[0].remote != before {
+		t.Errorf("window moved from %+v to %+v on a message that failed its check", before, amf.pairs[0].remote)
 	}
 	if !verified(amf, msgs[2]) {
 		t.Error("the real late message was refused after a forgery of it")
@@ -261,8 +261,8 @@ func TestTheLastCountIsTheLateMessages(t *testing.T) {
 	for _, k := range []int{0, 2, 1} {
 		verified(amf, msgs[k])
 	}
-	if amf.remoteLast != newCounter(0, 1) || amf.remote.highest != newCounter(0, 2) {
-		t.Errorf("last %d highest %d, want 1 and 2", amf.remoteLast, amf.remote.highest)
+	if amf.pairs[0].remoteLast != newCounter(0, 1) || amf.pairs[0].remote.highest != newCounter(0, 2) {
+		t.Errorf("last %d highest %d, want 1 and 2", amf.pairs[0].remoteLast, amf.pairs[0].remote.highest)
 	}
 }
 
@@ -329,5 +329,38 @@ func TestARetransmittedNewContextMessageTakesTheNextCount(t *testing.T) {
 		if err != nil || msg.Gmm == nil || msg.Gmm.MacFailed {
 			t.Errorf("command %d was not accepted: %v", i, err)
 		}
+	}
+}
+
+// A context used over both accesses keeps a pair of NAS COUNTs for each (TS
+// 24.501 4.4.3.1): messages over 3GPP access leave the non-3GPP COUNTs where
+// they were, so the first non-3GPP message, with COUNT 0, still verifies. With
+// one pair it was taken for a replay of a 3GPP message's COUNT.
+func TestTheAccessesKeepCountsOfTheirOwn(t *testing.T) {
+	ue, amf := peers(t)
+	for i := 0; i < 3; i++ {
+		if !verified(amf, uplink(t, ue, NasSecBoth)) {
+			t.Fatalf("3GPP message %d did not verify", i)
+		}
+	}
+	if got := amf.UlCounterFor(false); got != 0 {
+		t.Errorf("the non-3GPP uplink COUNT moved to %d with 3GPP messages", got)
+	}
+
+	msg := &RegistrationComplete{}
+	msg.SetSecurityHeader(NasSecBoth)
+	wire, err := EncodeMm(ue, msg, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if wire[6] != 0 {
+		t.Errorf("the first non-3GPP message carries sequence number %d, want 0", wire[6])
+	}
+	got, err := Decode(amf, wire, false)
+	if err != nil || got.Gmm == nil || got.Gmm.MacFailed {
+		t.Errorf("the first non-3GPP message did not verify: %v", err)
+	}
+	if amf.UlCounterFor(true) != 2 || amf.UlCounter() != 2 {
+		t.Errorf("the 3GPP uplink COUNT is %d, want 2", amf.UlCounterFor(true))
 	}
 }

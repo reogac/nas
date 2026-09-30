@@ -60,20 +60,28 @@ const (
 	BearerNon3GPP uint8 = 0x02
 )
 
-type NasContext struct {
-	localCounter Counter      //sending NAS counter
-	remote       replayWindow //receiving NAS counter: the COUNTs received messages verified with
+// counters are the NAS COUNTs of one access: a security context used over both
+// 3GPP and non-3GPP access has a pair for each (TS 24.501 4.4.3.1). One pair
+// for both had messages over one access advance the COUNTs the other expected,
+// and the peer drop them as replays or fail their check.
+type counters struct {
+	local  Counter      //sending NAS counter
+	remote replayWindow //receiving NAS counter: the COUNTs received messages verified with
 	//remoteLast is the COUNT the most recently verified message was protected
 	//with, which a NAS container it carried is ciphered with. It is the highest
 	//except when that message arrived late
 	remoteLast Counter
-	encAlg     uint8     //encryption algorithm
-	intAlg     uint8     //integrity protection algorithm
-	intKey     [16]uint8 //integrity protection key
-	encKey     [16]uint8 //encryption key
-	emergency  bool
-	isAmf      bool
-	mutex      sync.Mutex
+}
+
+type NasContext struct {
+	pairs     [2]counters //by access: 3GPP, then non-3GPP
+	encAlg    uint8       //encryption algorithm
+	intAlg    uint8       //integrity protection algorithm
+	intKey    [16]uint8   //integrity protection key
+	encKey    [16]uint8   //encryption key
+	emergency bool
+	isAmf     bool
+	mutex     sync.Mutex
 }
 
 func NewNasContext(isAmf bool) *NasContext {
@@ -83,18 +91,38 @@ func NewNasContext(isAmf bool) *NasContext {
 	return ctx
 }
 
-func (ctx *NasContext) UlCounter() uint32 {
-	if !ctx.isAmf {
-		return uint32(ctx.localCounter)
+// pair is the COUNTs of the access bearer names.
+func (ctx *NasContext) pair(bearer uint8) *counters {
+	if bearer == BearerNon3GPP {
+		return &ctx.pairs[1]
 	}
-	return uint32(ctx.remote.highest)
+	return &ctx.pairs[0]
 }
 
-func (ctx *NasContext) DlCounter() uint32 {
-	if ctx.isAmf {
-		return uint32(ctx.localCounter)
+// UlCounter is the uplink NAS COUNT over 3GPP access; UlCounterFor names the
+// access.
+func (ctx *NasContext) UlCounter() uint32 { return ctx.UlCounterFor(true) }
+
+// DlCounter is the downlink NAS COUNT over 3GPP access; DlCounterFor names the
+// access.
+func (ctx *NasContext) DlCounter() uint32 { return ctx.DlCounterFor(true) }
+
+// UlCounterFor is the uplink NAS COUNT over 3GPP access, or non-3GPP access.
+func (ctx *NasContext) UlCounterFor(isGpp bool) uint32 {
+	p := ctx.pair(getBearer(isGpp))
+	if !ctx.isAmf {
+		return uint32(p.local)
 	}
-	return uint32(ctx.remote.highest)
+	return uint32(p.remote.highest)
+}
+
+// DlCounterFor is the downlink NAS COUNT over 3GPP access, or non-3GPP access.
+func (ctx *NasContext) DlCounterFor(isGpp bool) uint32 {
+	p := ctx.pair(getBearer(isGpp))
+	if ctx.isAmf {
+		return uint32(p.local)
+	}
+	return uint32(p.remote.highest)
 }
 
 func (ctx *NasContext) SelectedAlgorithms() (uint8, uint8) {
@@ -122,27 +150,30 @@ func (ctx *NasContext) DeriveKeys(encAlg, intAlg uint8, kAmf []byte) (err error)
 	}
 	copy(ctx.encKey[:], kEnc[16:32])
 	copy(ctx.intKey[:], kInt[16:32])
-	ctx.localCounter.set(0, 0)
-	ctx.remote.reset()
-	ctx.remoteLast = 0
+	for i := range ctx.pairs {
+		ctx.pairs[i].local.set(0, 0)
+		ctx.pairs[i].remote.reset()
+		ctx.pairs[i].remoteLast = 0
+	}
 	return
 }
 
-func (ctx *NasContext) getDirection(isSending bool) (direction uint8, counter uint32) {
+func (ctx *NasContext) getDirection(isSending bool, bearer uint8) (direction uint8, counter uint32) {
+	p := ctx.pair(bearer)
 	if isSending { //for sending message
 		if ctx.isAmf {
 			direction = DirectionDownlink
 		} else {
 			direction = DirectionUplink
 		}
-		counter = uint32(ctx.localCounter)
+		counter = uint32(p.local)
 	} else { //for receiving message
 		if ctx.isAmf {
 			direction = DirectionUplink
 		} else {
 			direction = DirectionDownlink
 		}
-		counter = uint32(ctx.remoteLast)
+		counter = uint32(p.remoteLast)
 	}
 	return
 }
@@ -151,7 +182,7 @@ func (ctx *NasContext) encrypt(payload []byte, isSending bool, bearer uint8) (ou
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
 
-	direction, counter := ctx.getDirection(isSending)
+	direction, counter := ctx.getDirection(isSending, bearer)
 	return ctx.cipher(payload, direction, counter, bearer)
 }
 
@@ -184,7 +215,7 @@ func (ctx *NasContext) calculateMac(payload []byte, isSending bool, bearer uint8
 	ctx.mutex.Lock()
 	defer ctx.mutex.Unlock()
 
-	direction, counter := ctx.getDirection(isSending)
+	direction, counter := ctx.getDirection(isSending, bearer)
 	return ctx.mac(payload, direction, counter, bearer)
 }
 
