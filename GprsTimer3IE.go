@@ -34,10 +34,11 @@ func (ie *GprsTimer3) decode(wire []byte) (err error) {
 	return
 }
 
-// just for testing, need to correct this
+// NewGprsTimer3 builds the IE from its two fields (TS 24.008 10.5.7.4a): u is
+// the three-bit unit, from 000 (10 minutes) to 111 (deactivated), and v the
+// five-bit multiplier. Bits above either field are dropped.
 func NewGprsTimer3(u uint8, v uint8) *GprsTimer3 {
-	//TODO:
 	return &GprsTimer3{
-		Value: v,
+		Value: (u&0x07)<<5 | (v & 0x1f),
 	}
 }
