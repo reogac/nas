@@ -49,12 +49,22 @@ func (id *Imei) encode() (wire []byte, err error) {
 		}
 	}
 	if halfByte { //last byte is half-occupied
-		wire = append(wire, oneByte)
+		//its left half is the filler 1111 an even number of digits leaves
+		//(TS 24.501 9.11.3.4)
+		wire = append(wire, oneByte|0xf0)
 	}
 	return
 }
 func (id *Imei) decode(wire []byte) (err error) {
-	numDigits := (len(wire)-1)*2 + int(getBit(wire[0], 4)) //twice remaining octets and oddity
+	if len(wire) < 1 {
+		err = ErrIncomplete
+		return
+	}
+	//twice the remaining octets, and one for the first digit when the
+	//odd/even flag - bit 3, the one encode sets - says odd. Bit 4 was read,
+	//the lowest bit of the first digit, so an IMEISV starting with an odd
+	//digit took its filler for a 17th digit and failed the message it came in
+	numDigits := (len(wire)-1)*2 + int(getBit(wire[0], 3))
 	id.digits = make([]byte, numDigits)
 	octetId := 0
 	for i := 0; i < numDigits; i++ {
