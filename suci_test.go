@@ -52,3 +52,23 @@ func Test_SuciNai(t *testing.T) {
 		}
 	}
 }
+
+// A SUCI whose scheme output is empty is refused. It was taken, and rendering
+// its MSIN indexed out of range.
+func Test_ASuciWithNoSchemeOutputIsRefused(t *testing.T) {
+	//an Identity Response carrying a SUCI of IMSI format, PLMN 001/01, routing
+	//indicator 0, the null scheme, key id 0 - and nothing after
+	suci := []byte{0x01, 0x00, 0xf1, 0x10, 0x00, 0x00, 0x00, 0x00}
+	wire := append([]byte{EPD_5GMM, NasSecNone, IdentityResponseMsgType, 0x00, byte(len(suci))}, suci...)
+	if _, err := Decode(nil, wire, true); err == nil {
+		t.Fatal("a SUCI with no scheme output decoded")
+	}
+	//and with one octet of MSIN it decodes, and renders
+	suci = append(suci, 0x21)
+	wire = append([]byte{EPD_5GMM, NasSecNone, IdentityResponseMsgType, 0x00, byte(len(suci))}, suci...)
+	msg, err := Decode(nil, wire, true)
+	if err != nil {
+		t.Fatalf("a SUCI with an MSIN failed to decode: %v", err)
+	}
+	_ = msg.Gmm.IdentityResponse.MobileIdentity.String()
+}

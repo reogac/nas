@@ -298,3 +298,36 @@ func TestCandidates(t *testing.T) {
 		t.Error("a COUNT below 0 was offered as late")
 	}
 }
+
+// A retransmitted message under a new security context takes the next COUNT,
+// as any retransmission does (TS 24.501 4.4.3.1), and the peer that took the
+// first accepts it. Each one used to be sent with COUNT 0, so a UE that had
+// accepted a SECURITY MODE COMMAND discarded its retransmissions as replays.
+func TestARetransmittedNewContextMessageTakesTheNextCount(t *testing.T) {
+	ue, amf := peers(t)
+	caps := UeSecurityCapability{}
+	caps.SetEA(2, true)
+	caps.SetIA(2, true)
+	cmd := &SecurityModeCommand{
+		SelectedNasSecurityAlgorithms:  NewSecurityAlgorithms(AlgIntegrity128NIA2, AlgCiphering128NEA2),
+		ReplayedUeSecurityCapabilities: caps,
+	}
+	cmd.SetSecurityHeader(NasSecIntegrityNew)
+	var sent [2][]byte
+	for i := range sent {
+		wire, err := EncodeMm(amf, cmd, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+		sent[i] = wire
+	}
+	if sent[0][6] == sent[1][6] {
+		t.Fatalf("both commands carry sequence number %d", sent[0][6])
+	}
+	for i, wire := range sent {
+		msg, err := Decode(ue, wire, true)
+		if err != nil || msg.Gmm == nil || msg.Gmm.MacFailed {
+			t.Errorf("command %d was not accepted: %v", i, err)
+		}
+	}
+}

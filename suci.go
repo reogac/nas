@@ -194,8 +194,11 @@ func (c *SupiImsi) encode() (wire []byte, err error) {
 	return
 }
 func (c *SupiImsi) decode(wire []byte) (err error) {
-	if len(wire) < 7 {
-		err = nasError("decode supi IMSI", err)
+	//the scheme output is never empty: the MSIN for the null scheme, the
+	//ECIES public key, ciphertext and MAC otherwise (TS 24.501 9.11.3.4).
+	//An empty one was taken, and indexed out of range when rendered
+	if len(wire) < 8 {
+		err = nasError("decode supi IMSI", ErrIncomplete)
 		return
 	}
 	c.PlmnId.decode(wire[0:3])     //no error
@@ -325,6 +328,9 @@ func SupiFormatString(format uint8) string {
 }
 
 func MsinFromBytes(buf []byte) string {
+	if len(buf) == 0 {
+		return ""
+	}
 	strBytes := make([]byte, 2*len(buf))
 	i := 0
 	for _, b := range buf {

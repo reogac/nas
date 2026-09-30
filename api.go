@@ -86,13 +86,15 @@ func EncodeMm(ctx *NasContext, msg GmmMessage, isGpp bool) (wire []byte, err err
 	case NasSecIntegrity:
 	case NasSecBoth:
 		ciphering = true
+	//a header naming a new security context takes the next COUNT like any
+	//other: DeriveKeys starts a new context's COUNTs at 0, and every new or
+	//retransmitted message after that takes the next one (TS 24.501 4.4.3.1).
+	//This reset the COUNT to 0 for each message with such a header, so a
+	//retransmitted SECURITY MODE COMMAND repeated one the UE had accepted, and
+	//a UE that took the first had to discard the rest as replays
 	case NasSecIntegrityNew:
-		//log.Tracef("Message with new security context: %d", secType)
-		ctx.localCounter.set(0, 0)
 	case NasSecBothNew:
-		//log.Tracef("Message with new security context: %d", secType)
 		ciphering = true
-		ctx.localCounter.set(0, 0)
 	default:
 		err = fmt.Errorf("Wrong security header type: 0x%0x", secType)
 		return

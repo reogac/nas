@@ -125,8 +125,11 @@ func (ie *MobileIdentity) decode(wire []byte) (err error) {
 
 type IdentityNone struct{}
 
+// getIdentityType is type 000, "No identity" (TS 24.501 9.11.3.4). It was
+// the 5G-GUTI's, so a caller that switched on the type took a UE without an
+// identity for one with a GUTI, and panicked asserting it was a *Guti.
 func (id *IdentityNone) getIdentityType() uint8 {
-	return MobileIdentity5GSType5gGuti //GUTI type
+	return MobileIdentity5GSTypeNoIdentity
 }
 
 func (id *IdentityNone) encode() (wire []byte, err error) {

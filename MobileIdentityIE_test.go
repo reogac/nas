@@ -103,3 +103,26 @@ func Test_MobileIdentity(t *testing.T) {
 	}
 
 }
+
+// "No identity" is identity type 000 on the wire and after decoding. It was
+// the 5G-GUTI's, so a caller switching on the type took it for a GUTI and
+// panicked asserting a *Guti.
+func Test_NoIdentityIsTypeNoIdentity(t *testing.T) {
+	rsp := &IdentityResponse{MobileIdentity: MobileIdentity{Id: &IdentityNone{}}}
+	rsp.SetSecurityHeader(NasSecNone)
+	wire, err := EncodeMm(nil, rsp, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if typ := wire[len(wire)-1] & 0x07; typ != MobileIdentity5GSTypeNoIdentity {
+		t.Errorf("No identity encoded as type %d", typ)
+	}
+	msg, err := Decode(nil, wire, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	id := msg.Gmm.IdentityResponse.MobileIdentity
+	if _, ok := id.Id.(*IdentityNone); !ok || id.GetType() != MobileIdentity5GSTypeNoIdentity {
+		t.Errorf("decoded as %T of type %d", id.Id, id.GetType())
+	}
+}
