@@ -201,8 +201,11 @@ func (c *SupiImsi) decode(wire []byte) (err error) {
 		err = nasError("decode supi IMSI", ErrIncomplete)
 		return
 	}
-	c.PlmnId.decode(wire[0:3])     //no error
-	c.RoutingInd.decode(wire[3:5]) //no error
+	c.PlmnId.decode(wire[0:3]) //no error
+	if err = c.RoutingInd.decode(wire[3:5]); err != nil {
+		err = nasError("decode supi IMSI", err)
+		return
+	}
 	c.ProtectionScheme = wire[5]
 	c.HomeNetworkPublicKeyId = wire[6]
 	c.SchemeOutput = make([]byte, len(wire)-7)
@@ -280,10 +283,22 @@ type RoutingIndicator struct {
 	bytes [2]byte
 }
 
+// String is the routing indicator's 1 to 4 digits: the digits a UE does not
+// use are coded 1111 (TS 24.501 9.11.3.4), and are not part of it.
 func (ri *RoutingIndicator) String() string {
-	return fmt.Sprintf("%d%d%d%d", ri.bytes[0]&0x0f, (ri.bytes[0]&0xf0)>>4, ri.bytes[1]&0x0f, (ri.bytes[1]&0xf0)>>4)
+	nibbles := [4]byte{ri.bytes[0] & 0x0f, ri.bytes[0] >> 4, ri.bytes[1] & 0x0f, ri.bytes[1] >> 4}
+	var s []byte
+	for _, d := range nibbles {
+		if d == 0x0f {
+			break
+		}
+		s = append(s, '0'+d)
+	}
+	return string(s)
 }
 
+// Parse reads a routing indicator of 1 to 4 digits, coding the digits it does
+// not have as 1111.
 func (ri *RoutingIndicator) Parse(s string) (err error) {
 	var digits []byte
 	if digits, err = decimalBytes(s); err != nil {
@@ -291,12 +306,14 @@ func (ri *RoutingIndicator) Parse(s string) (err error) {
 		return
 	}
 
-	if len(digits) != 4 {
-		err = fmt.Errorf("Routing indicator must be 4 digits")
+	if len(digits) < 1 || len(digits) > 4 {
+		err = fmt.Errorf("Routing indicator must be 1 to 4 digits")
 		return
 	}
-	ri.bytes[0] = digits[0] + digits[1]<<4
-	ri.bytes[1] = digits[2] + digits[3]<<4
+	nibbles := [4]byte{0x0f, 0x0f, 0x0f, 0x0f}
+	copy(nibbles[:], digits)
+	ri.bytes[0] = nibbles[0] | nibbles[1]<<4
+	ri.bytes[1] = nibbles[2] | nibbles[3]<<4
 	return
 }
 
@@ -309,6 +326,18 @@ func (ri *RoutingIndicator) decode(wire []byte) (err error) {
 	if len(wire) != 2 {
 		err = ErrInvalidSize
 		return
+	}
+	//1 to 4 digits, then the 1111 filler to the end
+	nibbles := [4]byte{wire[0] & 0x0f, wire[0] >> 4, wire[1] & 0x0f, wire[1] >> 4}
+	filled := false
+	for i, d := range nibbles {
+		switch {
+		case d == 0x0f && i > 0:
+			filled = true
+		case d > 9 || filled:
+			err = fmt.Errorf("Routing indicator %x is not 1 to 4 digits", wire)
+			return
+		}
 	}
 	copy(ri.bytes[:], wire)
 	return
