@@ -125,6 +125,21 @@ func (ctx *NasContext) DlCounterFor(isGpp bool) uint32 {
 	return uint32(p.remote.highest)
 }
 
+// CountNearLimit reports a NAS COUNT of either access, sent or received, within
+// NAS_COUNT_MARGIN of the last one its keys may protect. The AMF then takes new
+// keys into use, or the messages run out (TS 24.501 4.4.3.5).
+func (ctx *NasContext) CountNearLimit() bool {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	for i := range ctx.pairs {
+		p := &ctx.pairs[i]
+		if p.local > NAS_COUNT_MAX-NAS_COUNT_MARGIN || p.remote.highest > NAS_COUNT_MAX-NAS_COUNT_MARGIN {
+			return true
+		}
+	}
+	return false
+}
+
 func (ctx *NasContext) SelectedAlgorithms() (uint8, uint8) {
 	return ctx.encAlg, ctx.intAlg
 }

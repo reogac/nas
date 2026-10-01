@@ -53,7 +53,13 @@ func (w *replayWindow) candidates(sqn uint8) (ahead Counter, late Counter, hasLa
 	}
 	overflow := w.highest.overflow()
 	if sqn <= w.highest.sqn() {
+		//the next overflow, unless this is the last one: a COUNT past
+		//NAS_COUNT_MAX is never used, and reading one as 0 would take the
+		//message as one long since received (TS 24.501 4.4.3.5)
 		ahead = newCounter(overflow+1, sqn)
+		if overflow == 0xffff {
+			ahead = NAS_COUNT_MAX + 1
+		}
 		late = newCounter(overflow, sqn)
 	} else {
 		ahead = newCounter(overflow, sqn)

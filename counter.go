@@ -53,10 +53,26 @@ func (c *Counter) setSqn(sqn uint8) {
 	*c = Counter((uint32(*c) & 0xffffff00) | uint32(sqn))
 }
 
+// NAS_COUNT_MAX is the last COUNT a message may be protected with. One more
+// would wrap to 0 and repeat a COUNT already used under the same keys (TS 24.501
+// 4.4.3.5), so a counter past it is spent and protects nothing.
+const NAS_COUNT_MAX Counter = 0x00ffffff
+
+// NAS_COUNT_MARGIN is how close to NAS_COUNT_MAX a COUNT is close to the limit:
+// the AMF then takes new keys into use before the limit is reached (TS 24.501
+// 4.4.3.5), with that many messages left to do it in.
+const NAS_COUNT_MARGIN Counter = 1 << 16
+
+// inc moves to the next COUNT. Past NAS_COUNT_MAX it stops, spent, rather than
+// wrapping to 0.
 func (c *Counter) inc() {
-	v := uint32(*c) + 1
-	*c = Counter(v & 0x00ffffff) //mask last 24 bits
+	if *c <= NAS_COUNT_MAX {
+		*c++
+	}
 }
+
+// spent reports a counter past the last COUNT it may use.
+func (c Counter) spent() bool { return c > NAS_COUNT_MAX }
 
 func (c *Counter) sqn() uint8 {
 	return uint8(*c & 0x000000ff)

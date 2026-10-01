@@ -25,6 +25,9 @@ var (
 	ErrUnknownEpd     error = fmt.Errorf("Unknown EPD")
 	ErrUnknownSec     error = fmt.Errorf("Unknown security type")
 	ErrUnknownMsgType error = fmt.Errorf("Unknown message type")
+	//ErrCountSpent refuses a message the NAS COUNT has no value left to
+	//protect: the keys must be replaced first
+	ErrCountSpent error = fmt.Errorf("NAS COUNT spent")
 )
 
 type NasError struct {

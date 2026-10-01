@@ -100,6 +100,10 @@ func EncodeMm(ctx *NasContext, msg GmmMessage, isGpp bool) (wire []byte, err err
 		return
 	}
 	bearer := getBearer(isGpp)
+	if ctx.pair(bearer).local.spent() {
+		err = ErrCountSpent
+		return
+	}
 	if ciphering {
 		//log.Tracef("Encode message type %d with counter = %d\n", wire[2], ctx.localCounter)
 		if wire, err = ctx.encrypt(wire, true, bearer); err != nil {
@@ -269,8 +273,10 @@ func decodeProtectedMm(ctx *NasContext, wire []byte, isGpp bool) (gmm DecodedGmm
 		tries[n] = late
 		n++
 	}
-	tries[n] = ahead
-	n++
+	if !ahead.spent() {
+		tries[n] = ahead
+		n++
+	}
 	var count Counter
 	verified := false
 	var mac32 []byte
