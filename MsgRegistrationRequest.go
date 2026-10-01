@@ -499,13 +499,16 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 	}
 	offset += consumed
 	for offset < wireLen {
+		start := offset
 		iei := getIei(wire[offset])
 		switch iei {
 		case 0x0C: //O: TV[1]
 			v := new(KeySetIdentifier)
 			if err = v.decode([]byte{wire[offset] & 0x0f /*righthalf*/}); err != nil {
-				err = nasError("decoding NonCurrentNativeNasKeySetIdentifier [O TV 1]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				err = nil
+				offset = start + 1
+				continue
 			}
 			msg.NonCurrentNativeNasKeySetIdentifier = v
 			offset++
@@ -513,8 +516,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(GmmCapability)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(13), v); err != nil {
-				err = nasError("decoding GmmCapability [O TLV 3-15]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding GmmCapability [O TLV 3-15]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.GmmCapability = v
@@ -522,8 +529,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(UeSecurityCapability)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(8), v); err != nil {
-				err = nasError("decoding UeSecurityCapability [O TLV 4-10]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding UeSecurityCapability [O TLV 4-10]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.UeSecurityCapability = v
@@ -531,8 +542,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(Nssai)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(72), v); err != nil {
-				err = nasError("decoding RequestedNssai [O TLV 4-74]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding RequestedNssai [O TLV 4-74]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.RequestedNssai = v
@@ -544,8 +559,10 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(TrackingAreaIdentity)
 			if err = v.decode(wire[offset : offset+6]); err != nil {
-				err = nasError("decoding LastVisitedRegisteredTai [O TV 7]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				err = nil
+				offset = start + 7
+				continue
 			}
 			msg.LastVisitedRegisteredTai = v
 			offset += 6
@@ -554,8 +571,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(13), v); err != nil {
-				err = nasError("decoding S1UeNetworkCapability [O TLV 4-15]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding S1UeNetworkCapability [O TLV 4-15]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.S1UeNetworkCapability = []byte(*v)
@@ -563,8 +584,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(UplinkDataStatus)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(32), v); err != nil {
-				err = nasError("decoding UplinkDataStatus [O TLV 4-34]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding UplinkDataStatus [O TLV 4-34]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.UplinkDataStatus = v
@@ -572,8 +597,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(PduSessionStatus)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(32), v); err != nil {
-				err = nasError("decoding PduSessionStatus [O TLV 4-34]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding PduSessionStatus [O TLV 4-34]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.PduSessionStatus = v
@@ -585,8 +614,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(uint8Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
-				err = nasError("decoding UeStatus [O TLV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding UeStatus [O TLV 3]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.UeStatus = (*uint8)(v)
@@ -594,8 +627,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(MobileIdentity)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(11), uint16(11), v); err != nil {
-				err = nasError("decoding AdditionalGuti [O TLV-E 14]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding AdditionalGuti [O TLV-E 14]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.AdditionalGuti = v
@@ -603,8 +640,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(AllowedPduSessionStatus)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(32), v); err != nil {
-				err = nasError("decoding AllowedPduSessionStatus [O TLV 4-34]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding AllowedPduSessionStatus [O TLV 4-34]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.AllowedPduSessionStatus = v
@@ -612,8 +653,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(uint8Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
-				err = nasError("decoding UeUsageSetting [O TLV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding UeUsageSetting [O TLV 3]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.UeUsageSetting = (*uint8)(v)
@@ -621,8 +666,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(uint8Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
-				err = nasError("decoding RequestedDrxParameters [O TLV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding RequestedDrxParameters [O TLV 3]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.RequestedDrxParameters = (*uint8)(v)
@@ -630,8 +679,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), v); err != nil {
-				err = nasError("decoding EpsNasMessageContainer [O TLV-E 4-n]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding EpsNasMessageContainer [O TLV-E 4-n]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.EpsNasMessageContainer = []byte(*v)
@@ -639,8 +692,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(0), uint16(808), v); err != nil {
-				err = nasError("decoding LadnIndication [O TLV-E 3-811]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding LadnIndication [O TLV-E 3-811]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.LadnIndication = []byte(*v)
@@ -652,8 +709,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), v); err != nil {
-				err = nasError("decoding PayloadContainer [O TLV-E 4-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding PayloadContainer [O TLV-E 4-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.PayloadContainer = []byte(*v)
@@ -665,8 +726,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(uint8Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
-				err = nasError("decoding UpdateType [O TLV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding UpdateType [O TLV 3]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.UpdateType = (*uint8)(v)
@@ -674,8 +739,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(3), uint16(3), v); err != nil {
-				err = nasError("decoding MobileStationClassmark2 [O TLV 5]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding MobileStationClassmark2 [O TLV 5]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.MobileStationClassmark2 = []byte(*v)
@@ -683,8 +752,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(3), uint16(0), v); err != nil {
-				err = nasError("decoding SupportedCodecs [O TLV 5-n]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding SupportedCodecs [O TLV 5-n]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.SupportedCodecs = []byte(*v)
@@ -692,8 +765,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), v); err != nil {
-				err = nasError("decoding NasMessageContainer [O TLV-E 4-n]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding NasMessageContainer [O TLV-E 4-n]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.NasMessageContainer = []byte(*v)
@@ -701,8 +778,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(uint16Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(2), v); err != nil {
-				err = nasError("decoding EpsBearerContextStatus [O TLV 4]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding EpsBearerContextStatus [O TLV 4]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.EpsBearerContextStatus = (*uint16)(v)
@@ -710,8 +791,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(2), v); err != nil {
-				err = nasError("decoding RequestedExtendedDrxParameters [O TLV 3-4]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding RequestedExtendedDrxParameters [O TLV 3-4]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.RequestedExtendedDrxParameters = []byte(*v)
@@ -719,8 +804,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(GprsTimer3)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
-				err = nasError("decoding T3324Value [O TLV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding T3324Value [O TLV 3]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.T3324Value = v
@@ -728,8 +817,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(0), v); err != nil {
-				err = nasError("decoding UeRadioCapabilityId [O TLV 3-n]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding UeRadioCapabilityId [O TLV 3-n]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.UeRadioCapabilityId = []byte(*v)
@@ -737,8 +830,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(MappedNssai)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(40), v); err != nil {
-				err = nasError("decoding RequestedMappedNssai [O TLV 3-42]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding RequestedMappedNssai [O TLV 3-42]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.RequestedMappedNssai = v
@@ -746,8 +843,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(uint8Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
-				err = nasError("decoding AdditionalInformationRequested [O TLV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding AdditionalInformationRequested [O TLV 3]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.AdditionalInformationRequested = (*uint8)(v)
@@ -755,8 +856,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(0), v); err != nil {
-				err = nasError("decoding RequestedWusAssistanceInformation [O TLV 3-n]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding RequestedWusAssistanceInformation [O TLV 3-n]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.RequestedWusAssistanceInformation = []byte(*v)
@@ -768,8 +873,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(uint8Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
-				err = nasError("decoding RequestedNbN1ModeDrxParameters [O TLV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding RequestedNbN1ModeDrxParameters [O TLV 3]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.RequestedNbN1ModeDrxParameters = (*uint8)(v)
@@ -777,8 +886,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(uint8Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
-				err = nasError("decoding UeRequestType [O TLV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding UeRequestType [O TLV 3]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.UeRequestType = (*uint8)(v)
@@ -786,8 +899,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(33), v); err != nil {
-				err = nasError("decoding PagingRestriction [O TLV 3-35]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding PagingRestriction [O TLV 3-35]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.PagingRestriction = []byte(*v)
@@ -795,8 +912,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(3), uint16(0), v); err != nil {
-				err = nasError("decoding ServiceLevelAaContainer [O TLV-E 6-n]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding ServiceLevelAaContainer [O TLV-E 6-n]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.ServiceLevelAaContainer = []byte(*v)
@@ -804,8 +925,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(6), uint16(6), v); err != nil {
-				err = nasError("decoding Nid [O TLV 8]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding Nid [O TLV 8]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.Nid = []byte(*v)
@@ -813,8 +938,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(3), uint16(3), v); err != nil {
-				err = nasError("decoding MsDeterminedPlmnWithDisasterCondition [O TLV 5]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding MsDeterminedPlmnWithDisasterCondition [O TLV 5]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.MsDeterminedPlmnWithDisasterCondition = []byte(*v)
@@ -822,8 +951,12 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(0), v); err != nil {
-				err = nasError("decoding RequestedPeipsAssistanceInformation [O TLV 3-n]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding RequestedPeipsAssistanceInformation [O TLV 3-n]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.RequestedPeipsAssistanceInformation = []byte(*v)
@@ -831,14 +964,21 @@ func (msg *RegistrationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(GprsTimer3)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
-				err = nasError("decoding RequestedT3512Value [O TLV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding RequestedT3512Value [O TLV 3]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.RequestedT3512Value = v
 		default:
-			err = ErrUnknownIei
-			return
+			//an IE the message does not define is skipped, unless it is
+			//encoded as comprehension required (TS 24.501 7.6.1)
+			if offset, err = skipUnknownIe(wire, start); err != nil {
+				return
+			}
 		}
 	}
 	return

@@ -46,20 +46,28 @@ func (msg *RegistrationComplete) decodeBody(wire []byte) (err error) {
 	wireLen := len(wire)
 	consumed := 0
 	for offset < wireLen {
+		start := offset
 		iei := getIei(wire[offset])
 		switch iei {
 		case 0x73: //O: TLV-E[20]
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(17), uint16(17), v); err != nil {
-				err = nasError("decoding SorTransparentContainer [O TLV-E 20]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding SorTransparentContainer [O TLV-E 20]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.SorTransparentContainer = []byte(*v)
 		default:
-			err = ErrUnknownIei
-			return
+			//an IE the message does not define is skipped, unless it is
+			//encoded as comprehension required (TS 24.501 7.6.1)
+			if offset, err = skipUnknownIe(wire, start); err != nil {
+				return
+			}
 		}
 	}
 	return

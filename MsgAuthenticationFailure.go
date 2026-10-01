@@ -58,20 +58,28 @@ func (msg *AuthenticationFailure) decodeBody(wire []byte) (err error) {
 	offset++
 
 	for offset < wireLen {
+		start := offset
 		iei := getIei(wire[offset])
 		switch iei {
 		case 0x30: //O: TLV[16]
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(14), uint16(14), v); err != nil {
-				err = nasError("decoding AuthenticationFailureParameter [O TLV 16]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding AuthenticationFailureParameter [O TLV 16]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.AuthenticationFailureParameter = []byte(*v)
 		default:
-			err = ErrUnknownIei
-			return
+			//an IE the message does not define is skipped, unless it is
+			//encoded as comprehension required (TS 24.501 7.6.1)
+			if offset, err = skipUnknownIe(wire, start); err != nil {
+				return
+			}
 		}
 	}
 	return

@@ -66,14 +66,19 @@ func (msg *SecurityModeComplete) decodeBody(wire []byte) (err error) {
 	wireLen := len(wire)
 	consumed := 0
 	for offset < wireLen {
+		start := offset
 		iei := getIei(wire[offset])
 		switch iei {
 		case 0x77: //O: TLV-E[12]
 			offset++ //consume IEI
 			v := new(MobileIdentity)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(9), uint16(9), v); err != nil {
-				err = nasError("decoding Imeisv [O TLV-E 12]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding Imeisv [O TLV-E 12]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.Imeisv = v
@@ -81,8 +86,12 @@ func (msg *SecurityModeComplete) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), v); err != nil {
-				err = nasError("decoding NasMessageContainer [O TLV-E 4-n]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding NasMessageContainer [O TLV-E 4-n]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.NasMessageContainer = []byte(*v)
@@ -90,14 +99,21 @@ func (msg *SecurityModeComplete) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(MobileIdentity)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(0), v); err != nil {
-				err = nasError("decoding NonImeisvPei [O TLV-E 7-n]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding NonImeisvPei [O TLV-E 7-n]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.NonImeisvPei = v
 		default:
-			err = ErrUnknownIei
-			return
+			//an IE the message does not define is skipped, unless it is
+			//encoded as comprehension required (TS 24.501 7.6.1)
+			if offset, err = skipUnknownIe(wire, start); err != nil {
+				return
+			}
 		}
 	}
 	return

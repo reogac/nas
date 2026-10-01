@@ -137,3 +137,42 @@ func decimalBytes(s string) (buf []byte, err error) {
 	buf = tmp
 	return
 }
+
+// skipLV returns the offset just past the length and value of an IE whose
+// length octets start at offset: one for a TLV, two for a TLV-E. It reads only
+// the length, so it steps over a value its own decoder refused.
+func skipLV(wire []byte, offset int, extend bool) (int, error) {
+	lenSize := 1
+	if extend {
+		lenSize = 2
+	}
+	if offset+lenSize > len(wire) {
+		return offset, ErrIncomplete
+	}
+	l := int(wire[offset])
+	if extend {
+		l = int(binary.BigEndian.Uint16(wire[offset : offset+2]))
+	}
+	end := offset + lenSize + l
+	if end > len(wire) {
+		return offset, ErrIncomplete
+	}
+	return end, nil
+}
+
+// skipUnknownIe returns the offset just past an IE whose IEI the message does
+// not define, read by the format its IEI implies (TS 24.007 11.2.4): bit 8 set
+// is a type 1 or 2 IE of one octet, 0111 in bits 8 to 5 a TLV-E, and any other
+// a TLV. An IEI with 0000 in bits 8 to 5 is encoded as comprehension required,
+// and refuses the message.
+func skipUnknownIe(wire []byte, offset int) (int, error) {
+	iei := wire[offset]
+	switch {
+	case iei&0x80 != 0:
+		return offset + 1, nil
+	case iei&0xf0 == 0:
+		return offset, ErrUnknownIei
+	default:
+		return skipLV(wire, offset+1, iei&0xf0 == 0x70)
+	}
+}

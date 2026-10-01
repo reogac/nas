@@ -129,6 +129,7 @@ func (msg *UlNasTransport) decodeBody(wire []byte) (err error) {
 	offset += consumed
 	msg.PayloadContainer = []byte(*v)
 	for offset < wireLen {
+		start := offset
 		iei := getIei(wire[offset])
 		switch iei {
 		case 0x12: //O: TV[2]
@@ -157,8 +158,12 @@ func (msg *UlNasTransport) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(SNssai)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(8), v); err != nil {
-				err = nasError("decoding SNssai [O TLV 3-10]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding SNssai [O TLV 3-10]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.SNssai = v
@@ -166,8 +171,12 @@ func (msg *UlNasTransport) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(Dnn)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(100), v); err != nil {
-				err = nasError("decoding Dnn [O TLV 3-102]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding Dnn [O TLV 3-102]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.Dnn = v
@@ -175,8 +184,12 @@ func (msg *UlNasTransport) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(0), v); err != nil {
-				err = nasError("decoding AdditionalInformation [O TLV 3-n]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding AdditionalInformation [O TLV 3-n]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.AdditionalInformation = []byte(*v)
@@ -189,8 +202,11 @@ func (msg *UlNasTransport) decodeBody(wire []byte) (err error) {
 			*msg.ReleaseAssistanceIndication = wire[offset] & 0x0f //take right 1/2
 			offset++
 		default:
-			err = ErrUnknownIei
-			return
+			//an IE the message does not define is skipped, unless it is
+			//encoded as comprehension required (TS 24.501 7.6.1)
+			if offset, err = skipUnknownIe(wire, start); err != nil {
+				return
+			}
 		}
 	}
 	return

@@ -56,14 +56,19 @@ func (msg *PduSessionAuthenticationResult) decodeBody(wire []byte) (err error) {
 	wireLen := len(wire)
 	consumed := 0
 	for offset < wireLen {
+		start := offset
 		iei := getIei(wire[offset])
 		switch iei {
 		case 0x78: //O: TLV-E[7-1503]
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(1500), v); err != nil {
-				err = nasError("decoding EapMessage [O TLV-E 7-1503]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding EapMessage [O TLV-E 7-1503]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.EapMessage = []byte(*v)
@@ -71,14 +76,21 @@ func (msg *PduSessionAuthenticationResult) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(ExtendedProtocolConfigurationOptions)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), v); err != nil {
-				err = nasError("decoding ExtendedProtocolConfigurationOptions [O TLV-E 4-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding ExtendedProtocolConfigurationOptions [O TLV-E 4-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.ExtendedProtocolConfigurationOptions = v
 		default:
-			err = ErrUnknownIei
-			return
+			//an IE the message does not define is skipped, unless it is
+			//encoded as comprehension required (TS 24.501 7.6.1)
+			if offset, err = skipUnknownIe(wire, start); err != nil {
+				return
+			}
 		}
 	}
 	return

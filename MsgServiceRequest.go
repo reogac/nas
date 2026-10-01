@@ -141,14 +141,19 @@ func (msg *ServiceRequest) decodeBody(wire []byte) (err error) {
 	}
 	offset += consumed
 	for offset < wireLen {
+		start := offset
 		iei := getIei(wire[offset])
 		switch iei {
 		case 0x40: //O: TLV[4-34]
 			offset++ //consume IEI
 			v := new(UplinkDataStatus)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(32), v); err != nil {
-				err = nasError("decoding UplinkDataStatus [O TLV 4-34]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding UplinkDataStatus [O TLV 4-34]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.UplinkDataStatus = v
@@ -156,8 +161,12 @@ func (msg *ServiceRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(PduSessionStatus)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(32), v); err != nil {
-				err = nasError("decoding PduSessionStatus [O TLV 4-34]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding PduSessionStatus [O TLV 4-34]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.PduSessionStatus = v
@@ -165,8 +174,12 @@ func (msg *ServiceRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(AllowedPduSessionStatus)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(32), v); err != nil {
-				err = nasError("decoding AllowedPduSessionStatus [O TLV 4-34]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding AllowedPduSessionStatus [O TLV 4-34]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.AllowedPduSessionStatus = v
@@ -174,8 +187,12 @@ func (msg *ServiceRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), v); err != nil {
-				err = nasError("decoding NasMessageContainer [O TLV-E 4-n]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding NasMessageContainer [O TLV-E 4-n]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.NasMessageContainer = []byte(*v)
@@ -183,8 +200,12 @@ func (msg *ServiceRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(uint8Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
-				err = nasError("decoding UeRequestType [O TLV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding UeRequestType [O TLV 3]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.UeRequestType = (*uint8)(v)
@@ -192,14 +213,21 @@ func (msg *ServiceRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(33), v); err != nil {
-				err = nasError("decoding PagingRestriction [O TLV 3-35]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding PagingRestriction [O TLV 3-35]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.PagingRestriction = []byte(*v)
 		default:
-			err = ErrUnknownIei
-			return
+			//an IE the message does not define is skipped, unless it is
+			//encoded as comprehension required (TS 24.501 7.6.1)
+			if offset, err = skipUnknownIe(wire, start); err != nil {
+				return
+			}
 		}
 	}
 	return

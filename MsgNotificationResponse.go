@@ -45,20 +45,28 @@ func (msg *NotificationResponse) decodeBody(wire []byte) (err error) {
 	wireLen := len(wire)
 	consumed := 0
 	for offset < wireLen {
+		start := offset
 		iei := getIei(wire[offset])
 		switch iei {
 		case 0x50: //O: TLV[4-34]
 			offset++ //consume IEI
 			v := new(PduSessionStatus)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(32), v); err != nil {
-				err = nasError("decoding PduSessionStatus [O TLV 4-34]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding PduSessionStatus [O TLV 4-34]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.PduSessionStatus = v
 		default:
-			err = ErrUnknownIei
-			return
+			//an IE the message does not define is skipped, unless it is
+			//encoded as comprehension required (TS 24.501 7.6.1)
+			if offset, err = skipUnknownIe(wire, start); err != nil {
+				return
+			}
 		}
 	}
 	return

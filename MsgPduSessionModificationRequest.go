@@ -184,14 +184,19 @@ func (msg *PduSessionModificationRequest) decodeBody(wire []byte) (err error) {
 	wireLen := len(wire)
 	consumed := 0
 	for offset < wireLen {
+		start := offset
 		iei := getIei(wire[offset])
 		switch iei {
 		case 0x28: //O: TLV[3-15]
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(13), v); err != nil {
-				err = nasError("decoding GsmCapability [O TLV 3-15]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding GsmCapability [O TLV 3-15]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.GsmCapability = []byte(*v)
@@ -212,8 +217,10 @@ func (msg *PduSessionModificationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(uint16Decoder)
 			if err = v.decode(wire[offset : offset+2]); err != nil {
-				err = nasError("decoding MaximumNumberOfSupportedPacketFilters [O TV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				err = nil
+				offset = start + 3
+				continue
 			}
 			msg.MaximumNumberOfSupportedPacketFilters = (*uint16)(v)
 			offset += 2
@@ -230,8 +237,10 @@ func (msg *PduSessionModificationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(IntegrityProtectionMaximumDataRate)
 			if err = v.decode(wire[offset : offset+2]); err != nil {
-				err = nasError("decoding IntegrityProtectionMaximumDataRate [O TV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				err = nil
+				offset = start + 3
+				continue
 			}
 			msg.IntegrityProtectionMaximumDataRate = v
 			offset += 2
@@ -240,8 +249,12 @@ func (msg *PduSessionModificationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(QosRules)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(0), v); err != nil {
-				err = nasError("decoding RequestedQosRules [O TLV-E 7-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding RequestedQosRules [O TLV-E 7-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.RequestedQosRules = v
@@ -249,8 +262,12 @@ func (msg *PduSessionModificationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(QosFlowDescriptions)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(3), uint16(0), v); err != nil {
-				err = nasError("decoding RequestedQosFlowDescriptions [O TLV-E 6-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding RequestedQosFlowDescriptions [O TLV-E 6-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.RequestedQosFlowDescriptions = v
@@ -258,8 +275,12 @@ func (msg *PduSessionModificationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(0), v); err != nil {
-				err = nasError("decoding MappedEpsBearerContexts [O TLV-E 7-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding MappedEpsBearerContexts [O TLV-E 7-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.MappedEpsBearerContexts = []byte(*v)
@@ -267,8 +288,12 @@ func (msg *PduSessionModificationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(ExtendedProtocolConfigurationOptions)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), v); err != nil {
-				err = nasError("decoding ExtendedProtocolConfigurationOptions [O TLV-E 4-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding ExtendedProtocolConfigurationOptions [O TLV-E 4-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.ExtendedProtocolConfigurationOptions = v
@@ -276,8 +301,12 @@ func (msg *PduSessionModificationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), v); err != nil {
-				err = nasError("decoding PortManagementInformationContainer [O TLV-E 4-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding PortManagementInformationContainer [O TLV-E 4-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.PortManagementInformationContainer = []byte(*v)
@@ -285,8 +314,12 @@ func (msg *PduSessionModificationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(3), uint16(255), v); err != nil {
-				err = nasError("decoding IpHeaderCompressionConfiguration [O TLV 5-257]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding IpHeaderCompressionConfiguration [O TLV 5-257]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.IpHeaderCompressionConfiguration = []byte(*v)
@@ -294,8 +327,12 @@ func (msg *PduSessionModificationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(uint8Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
-				err = nasError("decoding EthernetHeaderCompressionConfiguration [O TLV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding EthernetHeaderCompressionConfiguration [O TLV 3]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.EthernetHeaderCompressionConfiguration = (*uint8)(v)
@@ -303,8 +340,12 @@ func (msg *PduSessionModificationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(5), uint16(0), v); err != nil {
-				err = nasError("decoding RequestedMbsContainer [O TLV-E 8-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding RequestedMbsContainer [O TLV-E 8-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.RequestedMbsContainer = []byte(*v)
@@ -312,14 +353,21 @@ func (msg *PduSessionModificationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(3), uint16(0), v); err != nil {
-				err = nasError("decoding ServiceLevelAaContainer [O TLV-E 6-n]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding ServiceLevelAaContainer [O TLV-E 6-n]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.ServiceLevelAaContainer = []byte(*v)
 		default:
-			err = ErrUnknownIei
-			return
+			//an IE the message does not define is skipped, unless it is
+			//encoded as comprehension required (TS 24.501 7.6.1)
+			if offset, err = skipUnknownIe(wire, start); err != nil {
+				return
+			}
 		}
 	}
 	return

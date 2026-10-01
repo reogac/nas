@@ -152,6 +152,7 @@ func (msg *SecurityModeCommand) decodeBody(wire []byte) (err error) {
 	}
 	offset += consumed
 	for offset < wireLen {
+		start := offset
 		iei := getIei(wire[offset])
 		switch iei {
 		case 0x0E: //O: TV[1]
@@ -171,8 +172,12 @@ func (msg *SecurityModeCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(AdditionalSecurityInformation)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
-				err = nasError("decoding AdditionalSecurityInformation [O TLV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding AdditionalSecurityInformation [O TLV 3]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.AdditionalSecurityInformation = v
@@ -180,8 +185,12 @@ func (msg *SecurityModeCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(1500), v); err != nil {
-				err = nasError("decoding EapMessage [O TLV-E 7-1503]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding EapMessage [O TLV-E 7-1503]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.EapMessage = []byte(*v)
@@ -189,8 +198,12 @@ func (msg *SecurityModeCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(0), v); err != nil {
-				err = nasError("decoding Abba [O TLV 4-n]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding Abba [O TLV 4-n]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.Abba = []byte(*v)
@@ -198,14 +211,21 @@ func (msg *SecurityModeCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(5), v); err != nil {
-				err = nasError("decoding ReplayedS1UeSecurityCapabilities [O TLV 4-7]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding ReplayedS1UeSecurityCapabilities [O TLV 4-7]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.ReplayedS1UeSecurityCapabilities = []byte(*v)
 		default:
-			err = ErrUnknownIei
-			return
+			//an IE the message does not define is skipped, unless it is
+			//encoded as comprehension required (TS 24.501 7.6.1)
+			if offset, err = skipUnknownIe(wire, start); err != nil {
+				return
+			}
 		}
 	}
 	return

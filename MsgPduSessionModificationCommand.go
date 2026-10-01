@@ -182,6 +182,7 @@ func (msg *PduSessionModificationCommand) decodeBody(wire []byte) (err error) {
 	wireLen := len(wire)
 	consumed := 0
 	for offset < wireLen {
+		start := offset
 		iei := getIei(wire[offset])
 		switch iei {
 		case 0x59: //O: TV[2]
@@ -197,8 +198,12 @@ func (msg *PduSessionModificationCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(SessionAmbr)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(6), uint16(6), v); err != nil {
-				err = nasError("decoding SessionAmbr [O TLV 8]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding SessionAmbr [O TLV 8]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.SessionAmbr = v
@@ -219,8 +224,12 @@ func (msg *PduSessionModificationCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(QosRules)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(0), v); err != nil {
-				err = nasError("decoding AuthorizedQosRules [O TLV-E 7-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding AuthorizedQosRules [O TLV-E 7-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.AuthorizedQosRules = v
@@ -228,8 +237,12 @@ func (msg *PduSessionModificationCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(0), v); err != nil {
-				err = nasError("decoding MappedEpsBearerContexts [O TLV-E 7-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding MappedEpsBearerContexts [O TLV-E 7-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.MappedEpsBearerContexts = []byte(*v)
@@ -237,8 +250,12 @@ func (msg *PduSessionModificationCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(QosFlowDescriptions)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(3), uint16(0), v); err != nil {
-				err = nasError("decoding AuthorizedQosFlowDescriptions [O TLV-E 6-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding AuthorizedQosFlowDescriptions [O TLV-E 6-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.AuthorizedQosFlowDescriptions = v
@@ -246,8 +263,12 @@ func (msg *PduSessionModificationCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(ExtendedProtocolConfigurationOptions)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), v); err != nil {
-				err = nasError("decoding ExtendedProtocolConfigurationOptions [O TLV-E 4-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding ExtendedProtocolConfigurationOptions [O TLV-E 4-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.ExtendedProtocolConfigurationOptions = v
@@ -255,8 +276,12 @@ func (msg *PduSessionModificationCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(0), uint16(0), v); err != nil {
-				err = nasError("decoding AtsssContainer [O TLV-E 3-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding AtsssContainer [O TLV-E 3-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.AtsssContainer = []byte(*v)
@@ -264,8 +289,12 @@ func (msg *PduSessionModificationCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(3), uint16(255), v); err != nil {
-				err = nasError("decoding IpHeaderCompressionConfiguration [O TLV 5-257]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding IpHeaderCompressionConfiguration [O TLV 5-257]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.IpHeaderCompressionConfiguration = []byte(*v)
@@ -273,8 +302,12 @@ func (msg *PduSessionModificationCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(1), uint16(0), v); err != nil {
-				err = nasError("decoding PortManagementInformationContainer [O TLV-E 4-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding PortManagementInformationContainer [O TLV-E 4-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.PortManagementInformationContainer = []byte(*v)
@@ -282,8 +315,12 @@ func (msg *PduSessionModificationCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(uint16Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(2), uint16(2), v); err != nil {
-				err = nasError("decoding ServingPlmnRateControl [O TLV 4]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding ServingPlmnRateControl [O TLV 4]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.ServingPlmnRateControl = (*uint16)(v)
@@ -291,8 +328,12 @@ func (msg *PduSessionModificationCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(uint8Decoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(1), uint16(1), v); err != nil {
-				err = nasError("decoding EthernetHeaderCompressionConfiguration [O TLV 3]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding EthernetHeaderCompressionConfiguration [O TLV 3]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.EthernetHeaderCompressionConfiguration = (*uint8)(v)
@@ -300,8 +341,12 @@ func (msg *PduSessionModificationCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(6), uint16(0), v); err != nil {
-				err = nasError("decoding ReceivedMbsContainer [O TLV-E 9-65538]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding ReceivedMbsContainer [O TLV-E 9-65538]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.ReceivedMbsContainer = []byte(*v)
@@ -309,14 +354,21 @@ func (msg *PduSessionModificationCommand) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(3), uint16(0), v); err != nil {
-				err = nasError("decoding ServiceLevelAaContainer [O TLV-E 6-n]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding ServiceLevelAaContainer [O TLV-E 6-n]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.ServiceLevelAaContainer = []byte(*v)
 		default:
-			err = ErrUnknownIei
-			return
+			//an IE the message does not define is skipped, unless it is
+			//encoded as comprehension required (TS 24.501 7.6.1)
+			if offset, err = skipUnknownIe(wire, start); err != nil {
+				return
+			}
 		}
 	}
 	return

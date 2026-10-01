@@ -113,6 +113,7 @@ func (msg *AuthenticationRequest) decodeBody(wire []byte) (err error) {
 	offset += consumed
 	msg.Abba = []byte(*v)
 	for offset < wireLen {
+		start := offset
 		iei := getIei(wire[offset])
 		switch iei {
 		case 0x21: //O: TV[17]
@@ -123,8 +124,10 @@ func (msg *AuthenticationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if err = v.decode(wire[offset : offset+16]); err != nil {
-				err = nasError("decoding AuthenticationParameterRand [O TV 17]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				err = nil
+				offset = start + 17
+				continue
 			}
 			msg.AuthenticationParameterRand = []byte(*v)
 			offset += 16
@@ -133,8 +136,12 @@ func (msg *AuthenticationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], false, uint16(16), uint16(16), v); err != nil {
-				err = nasError("decoding AuthenticationParameterAutn [O TLV 18]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, false); err != nil {
+					err = nasError("decoding AuthenticationParameterAutn [O TLV 18]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.AuthenticationParameterAutn = []byte(*v)
@@ -142,14 +149,21 @@ func (msg *AuthenticationRequest) decodeBody(wire []byte) (err error) {
 			offset++ //consume IEI
 			v := new(bytesDecoder)
 			if consumed, err = decodeLV(wire[offset:], true, uint16(4), uint16(1500), v); err != nil {
-				err = nasError("decoding EapMessage [O TLV-E 7-1503]", err)
-				return
+				//syntactically incorrect: taken as absent (TS 24.501 7.7.1)
+				if offset, err = skipLV(wire, start+1, true); err != nil {
+					err = nasError("decoding EapMessage [O TLV-E 7-1503]", err)
+					return
+				}
+				continue
 			}
 			offset += consumed
 			msg.EapMessage = []byte(*v)
 		default:
-			err = ErrUnknownIei
-			return
+			//an IE the message does not define is skipped, unless it is
+			//encoded as comprehension required (TS 24.501 7.6.1)
+			if offset, err = skipUnknownIe(wire, start); err != nil {
+				return
+			}
 		}
 	}
 	return
