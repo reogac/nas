@@ -204,8 +204,9 @@ func decodeMm(ctx *NasContext, wire []byte, isGpp bool) (gmm DecodedGmmMessage, 
 }
 
 func decodeProtectedMm(ctx *NasContext, wire []byte, isGpp bool) (gmm DecodedGmmMessage, err error) {
-	// message is security protected
-	if len(wire) < 6 {
+	// message is security protected: the header, the MAC and the sequence
+	// number come before the message itself
+	if len(wire) < 7 {
 		err = ErrIncomplete
 		return
 	}
