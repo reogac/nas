@@ -98,10 +98,7 @@ func (ie *NetworkFeatureSupport) SetEMC(v uint8) {
 
 // octet 0, bit 1
 func (ie *NetworkFeatureSupport) GetIMSVoPSN3GPP() bool {
-	if len(ie.bytes) > 1 {
-		return getBit(ie.bytes[0], 1) == 1
-	}
-	return false
+	return getBit(ie.bytes[0], 1) == 1
 }
 
 func (ie *NetworkFeatureSupport) SetIMSVoPSN3GPP(f bool) {
@@ -114,7 +111,7 @@ func (ie *NetworkFeatureSupport) SetIMSVoPSN3GPP(f bool) {
 
 // octet 0, bit 0
 func (ie *NetworkFeatureSupport) GetIMSVoPS3GPP() bool {
-	return getBit(ie.bytes[0], 0) == 0
+	return getBit(ie.bytes[0], 0) == 1
 }
 func (ie *NetworkFeatureSupport) SetIMSVoPS3GPP(f bool) {
 	if f {
@@ -144,7 +141,7 @@ func (ie *NetworkFeatureSupport) SetMCSI(f bool) {
 // octet 1, bit 0
 func (ie *NetworkFeatureSupport) GetEMCN() bool {
 	if ie.hasOctet1 {
-		return getBit(ie.bytes[1], 0) == 0
+		return getBit(ie.bytes[1], 0) == 1
 	}
 	return false
 }
