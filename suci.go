@@ -213,10 +213,25 @@ func (c *SupiImsi) decode(wire []byte) (err error) {
 	return
 }
 
-// suci-mcc-mnc-routeId-scheme-keyId-output (suci)
-// imsi-plmnid-msin (supi-imsi)
+// Parse reads the parts of an IMSI-based SUCI that follow its "suci" or "imsi"
+// prefix. The form TS 29.571 defines, and String renders, is
+//
+//	suci-0-mcc-mnc-routingIndicator-scheme-keyId-output
+//
+// with the MSIN as the output of the null scheme. Two older forms this package
+// rendered are read too, so a peer still on an older release is understood
+// while a deployment is upgraded: suci-mcc-mnc-routingIndicator-scheme-keyId-
+// output, which lacks the SUPI type, and imsi-plmnId-msin for the null scheme,
+// which is neither a SUPI nor a SUCI and keeps no routing indicator.
 func (c *SupiImsi) Parse(parts []string) (err error) {
-	if len(parts) == 2 { //supi
+	if len(parts) == 7 {
+		//an MCC is three digits, so a leading 0 is the SUPI type
+		if parts[0] != "0" {
+			return fmt.Errorf("SUPI type %s is not an IMSI", parts[0])
+		}
+		parts = parts[1:]
+	}
+	if len(parts) == 2 { //imsi-plmnId-msin
 		if err = c.PlmnId.Parse(parts[0]); err != nil {
 			return nasError("Parse PlmnId", err)
 		}
@@ -225,7 +240,7 @@ func (c *SupiImsi) Parse(parts []string) (err error) {
 		}
 		c.ProtectionScheme = ProtectionSchemeNullScheme
 
-	} else if len(parts) == 6 { //concealed supi
+	} else if len(parts) == 6 { //mcc-mnc-routingIndicator-scheme-keyId-output
 		//plmnid
 		if err = c.PlmnId.Parse(parts[0] + parts[1]); err != nil {
 			return nasError("Parse PlmnId", err)
@@ -266,17 +281,19 @@ func (c *SupiImsi) Parse(parts []string) (err error) {
 	return
 }
 
-// suci-mcc-mnc-routeId-scheme-keyId-output
-// or imsi-plmnId-msin
+// String renders the SUCI as TS 29.571 defines it:
+// suci-0-mcc-mnc-routingIndicator-scheme-keyId-output, the 0 saying the SUPI
+// is an IMSI, and the output the MSIN for the null scheme or the scheme
+// output's hex otherwise. A null-scheme SUCI was rendered imsi-plmnId-msin,
+// which no peer outside this package reads as either a SUPI or a SUCI.
 func (c *SupiImsi) String() string {
 	mcc, mnc := c.PlmnId.Get()
-	if c.ProtectionScheme == ProtectionSchemeNullScheme { //plain supi-imsi
-		msin := MsinFromBytes(c.SchemeOutput)
-		return fmt.Sprintf("imsi-%s%s-%s", mcc, mnc, msin)
-	}
-	//concealed supi (aka suci)
 	rId := c.RoutingInd.String()
-	return fmt.Sprintf("suci-%s-%s-%s-%d-%d-%x", mcc, mnc, rId, c.ProtectionScheme, c.HomeNetworkPublicKeyId, c.SchemeOutput)
+	if c.ProtectionScheme == ProtectionSchemeNullScheme {
+		msin := MsinFromBytes(c.SchemeOutput)
+		return fmt.Sprintf("suci-0-%s-%s-%s-0-%d-%s", mcc, mnc, rId, c.HomeNetworkPublicKeyId, msin)
+	}
+	return fmt.Sprintf("suci-0-%s-%s-%s-%d-%d-%x", mcc, mnc, rId, c.ProtectionScheme, c.HomeNetworkPublicKeyId, c.SchemeOutput)
 }
 
 type RoutingIndicator struct {

@@ -16,6 +16,7 @@
 package nas
 
 import (
+	"regexp"
 	"testing"
 )
 
@@ -23,12 +24,16 @@ func Test_SuciNai(t *testing.T) {
 	testCases := make(map[string]string)
 	testCases["gci-"] = "gci-"
 	testCases["nai-324024243243"] = "nai-324024243243"
-	testCases["suci-12929-6783198712"] = "imsi-12929-6783198712"
-	testCases["imsi-129290-0000000001"] = "imsi-129290-0000000001"
-	testCases["suci-129-29-0001-1-1-6783198712"] = "suci-129-29-0001-1-1-6783198712"
-	testCases["suci-129-29-0001-0-1-6783198712"] = "imsi-12929-6783198712"
-	testCases["suci-001-01-0-1-1-aabbcc"] = "suci-001-01-0-1-1-aabbcc"
-	testCases["suci-001-01-12-1-1-aabbcc"] = "suci-001-01-12-1-1-aabbcc"
+	testCases["suci-0-129-29-0001-1-1-6783198712"] = "suci-0-129-29-0001-1-1-6783198712"
+	testCases["suci-0-129-29-0001-0-0-6783198712"] = "suci-0-129-29-0001-0-0-6783198712"
+	testCases["suci-0-001-01-0-1-1-aabbcc"] = "suci-0-001-01-0-1-1-aabbcc"
+	testCases["suci-0-001-01-12-1-1-aabbcc"] = "suci-0-001-01-12-1-1-aabbcc"
+	//the forms this package rendered before, read so that a peer on an older
+	//release is understood, and rendered in the form TS 29.571 defines
+	testCases["suci-12929-6783198712"] = "suci-0-129-29-0000-0-0-6783198712"
+	testCases["imsi-129290-0000000001"] = "suci-0-129-290-0000-0-0-0000000001"
+	testCases["suci-129-29-0001-1-1-6783198712"] = "suci-0-129-29-0001-1-1-6783198712"
+	testCases["suci-129-29-0001-0-0-6783198712"] = "suci-0-129-29-0001-0-0-6783198712"
 	var err error
 	for suciStr, expectedSuciStr := range testCases {
 		suci := new(Suci)
@@ -52,6 +57,39 @@ func Test_SuciNai(t *testing.T) {
 			t.Errorf("expected suci=%s, parsed: %s", expectedSuciStr, newSuci.String())
 			return
 		}
+	}
+}
+
+// tsSuci is the SUCI pattern of TS 29.571 (SupiOrSuci) and TS 29.509 (Suci),
+// without the alternative that accepts any string
+var tsSuci = regexp.MustCompile(`^suci-(0-[0-9]{3}-[0-9]{2,3}|[1-7]-.+)-[0-9]{1,4}-(0-0-.+|[a-fA-F1-9]-([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])-[a-fA-F0-9]+)$`)
+
+// A SUCI renders in the form TS 29.571 defines, whatever its scheme. It lacked
+// the SUPI type, and a null-scheme one rendered as imsi-plmnId-msin, so a peer
+// outside this package could read neither.
+func Test_ASuciRendersAsTs29571Defines(t *testing.T) {
+	for _, in := range []string{
+		"suci-0-208-93-0000-0-0-0000000001",
+		"suci-0-208-93-12-0-0-0000000001",
+		"suci-0-001-001-1234-1-1-aabbcc",
+		"suci-0-208-93-0-2-255-aabbcc",
+	} {
+		suci := new(Suci)
+		if err := suci.Parse(in); err != nil {
+			t.Errorf("%s: %+v", in, err)
+			continue
+		}
+		got := suci.String()
+		if got != in {
+			t.Errorf("%s rendered as %s", in, got)
+		}
+		if !tsSuci.MatchString(got) {
+			t.Errorf("%s is not a SUCI TS 29.571 defines", got)
+		}
+	}
+	//a SUPI type that is not an IMSI is refused rather than read as one
+	if err := new(Suci).Parse("suci-1-208-93-0000-0-0-0000000001"); err == nil {
+		t.Error("a SUCI of SUPI type 1 was read as an IMSI-based one")
 	}
 }
 

@@ -28,10 +28,8 @@ func Test_MobileIdentity(t *testing.T) {
 	suciList := make(map[string]string)
 	suciList["gci-"] = "gci-"
 	suciList["nai-324024243243"] = "nai-324024243243"
-	suciList["suci-12929-6783198712"] = "imsi-12929-6783198712"
-	suciList["imsi-129290-0000000001"] = "imsi-129290-0000000001"
-	suciList["suci-129-29-0001-1-1-6783198712"] = "suci-129-29-0001-1-1-6783198712"
-	suciList["suci-129-29-0001-0-1-6783198712"] = "imsi-12929-6783198712"
+	suciList["suci-0-129-29-0001-0-0-6783198712"] = "suci-0-129-29-0001-0-0-6783198712"
+	suciList["suci-0-129-29-0001-1-1-6783198712"] = "suci-0-129-29-0001-1-1-6783198712"
 	for in, out := range suciList {
 		suci := new(Suci)
 		suci.Parse(in)
