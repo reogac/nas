@@ -149,7 +149,11 @@ func (id *IdentityNone) String() string {
 }
 
 type MacIdentity struct {
-	mauri bool
+	//Mauri is the MAC address usage restriction indication: set, the MAC
+	//address is not to be used as an equipment identifier (TS 24.501
+	//9.11.3.4). Exported so a caller can read it and set it - it was decoded
+	//into a field nothing outside this package could see
+	Mauri bool
 	Bytes [6]byte
 }
 
@@ -159,8 +163,8 @@ func (id *MacIdentity) String() string {
 
 func (id *MacIdentity) encode() (wire []byte, err error) {
 	firstByte := id.getIdentityType() & 0x07 //last 3 bits
-	if id.mauri {                            //set MAURI bit
-		firstByte += 0x08
+	if id.Mauri {                            //set MAURI bit
+		firstByte |= macMauri
 	}
 	wire = append([]byte{firstByte}, id.Bytes[:]...)
 	return
@@ -174,9 +178,14 @@ func (id *MacIdentity) decode(wire []byte) error {
 	}
 
 	copy(id.Bytes[:], wire[1:])
-	id.mauri = getBit(wire[0], 4) == 1
+	id.Mauri = wire[0]&macMauri != 0
 	return nil
 }
+
+// macMauri is the MAURI bit of a MAC address identity's first octet: bit 4,
+// counting from 1 (TS 24.501 9.11.3.4). It was read from bit 5, a spare one,
+// so a MAURI the UE set decoded as clear.
+const macMauri uint8 = 0x08
 
 func (id *MacIdentity) getIdentityType() uint8 {
 	return MobileIdentity5GSTypeMac //Mac type

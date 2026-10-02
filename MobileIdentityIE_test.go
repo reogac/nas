@@ -124,3 +124,54 @@ func Test_NoIdentityIsTypeNoIdentity(t *testing.T) {
 		t.Errorf("decoded as %T of type %d", id.Id, id.GetType())
 	}
 }
+
+// A MAC address identity keeps its MAURI bit across encoding and decoding, and
+// it is bit 4 of the first octet. The bit was set at bit 4 and read at bit 5, so
+// a MAURI the UE set always decoded as clear.
+func Test_MacIdentityKeepsMauri(t *testing.T) {
+	for _, mauri := range []bool{false, true} {
+		mac := &MacIdentity{Mauri: mauri, Bytes: [6]byte{0x00, 0x1a, 0x2b, 0x3c, 0x4d, 0x5e}}
+		wire, err := (&MobileIdentity{Id: mac}).encode()
+		if err != nil {
+			t.Fatalf("encode: %+v", err)
+		}
+		got := new(MobileIdentity)
+		if err = got.decode(wire); err != nil {
+			t.Fatalf("decode: %+v", err)
+		}
+		back, ok := got.Id.(*MacIdentity)
+		if !ok {
+			t.Fatalf("decoded as %T", got.Id)
+		}
+		if back.Mauri != mauri || back.Bytes != mac.Bytes {
+			t.Errorf("MAURI %v: decoded %+v", mauri, back)
+		}
+	}
+
+	//as a UE sends it: type 110 with MAURI, and with a spare bit set instead
+	for first, want := range map[byte]bool{0x0e: true, 0x06: false, 0x16: false} {
+		mac := new(MacIdentity)
+		if err := mac.decode([]byte{first, 1, 2, 3, 4, 5, 6}); err != nil {
+			t.Fatalf("decode %#x: %+v", first, err)
+		}
+		if mac.Mauri != want {
+			t.Errorf("first octet %#x: MAURI %v, want %v", first, mac.Mauri, want)
+		}
+	}
+}
+
+// An EUI-64 identity survives encoding and decoding whole.
+func Test_Eui64IdentityRoundTrips(t *testing.T) {
+	eui := &Eui64Identity{Bytes: [8]byte{0x00, 0x1a, 0x2b, 0xff, 0xfe, 0x3c, 0x4d, 0x5e}}
+	wire, err := (&MobileIdentity{Id: eui}).encode()
+	if err != nil {
+		t.Fatalf("encode: %+v", err)
+	}
+	got := new(MobileIdentity)
+	if err = got.decode(wire); err != nil {
+		t.Fatalf("decode: %+v", err)
+	}
+	if back, ok := got.Id.(*Eui64Identity); !ok || back.Bytes != eui.Bytes {
+		t.Errorf("decoded %+v", got.Id)
+	}
+}
