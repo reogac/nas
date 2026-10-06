@@ -275,18 +275,23 @@ func acceptPlaintextN1Mm(msgType uint8, isAmf bool) bool {
 		}
 		return true
 	} else {
+		// TS 24.501 4.4.4.2: the messages the receiving 5GMM entity in the UE
+		// processes without integrity protection. The clause's conditions -
+		// an IDENTITY REQUEST asking for the SUCI, a DEREGISTRATION ACCEPT for
+		// a de-registration that was not a switch-off, a reject whose cause is
+		// not #76 or #78 - are in the message, not its type, and are left to
+		// the caller.
 		switch msgType {
 		case IdentityRequestMsgType:
 		case AuthenticationRequestMsgType:
-		case SecurityModeCommandMsgType:
-		case ServiceRejectMsgType:
-		case RegistrationRejectMsgType:
+		case AuthenticationResultMsgType:
 		case AuthenticationRejectMsgType:
-		case GmmStatusMsgType:
+		case RegistrationRejectMsgType:
+		case DeregistrationAcceptFromUeMsgType:
+		case ServiceRejectMsgType:
 		default:
 			return false
 		}
 		return true
-
 	}
 }
