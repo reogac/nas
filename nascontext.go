@@ -144,7 +144,37 @@ func (ctx *NasContext) SelectedAlgorithms() (uint8, uint8) {
 	return ctx.encAlg, ctx.intAlg
 }
 
+// DeriveKeys takes a new K_AMF into use: the NAS keys of the algorithms named
+// are derived from it, and the NAS COUNTs of both accesses start again from
+// zero (TS 33.501 6.4.3.1).
 func (ctx *NasContext) DeriveKeys(encAlg, intAlg uint8, kAmf []byte) (err error) {
+	ctx.mutex.Lock()
+	defer ctx.mutex.Unlock()
+	if err = ctx.deriveAlgorithmKeys(encAlg, intAlg, kAmf); err != nil {
+		return
+	}
+	for i := range ctx.pairs {
+		ctx.pairs[i].local.set(0, 0)
+		ctx.pairs[i].remote.reset()
+		ctx.pairs[i].remoteLast = 0
+	}
+	return
+}
+
+// ChangeAlgorithms changes the NAS algorithms of a context already in use, its
+// K_AMF the same: the keys of the algorithms named are derived from kAmf and
+// the NAS COUNTs of both accesses go on where they are, which is what a NAS
+// Security Mode Command changing only the algorithms of the current 5G NAS
+// security context asks of both ends (TS 24.501 5.4.2.1 a)). Only a new K_AMF
+// starts them again, through DeriveKeys.
+func (ctx *NasContext) ChangeAlgorithms(encAlg, intAlg uint8, kAmf []byte) error {
+	return ctx.deriveAlgorithmKeys(encAlg, intAlg, kAmf)
+}
+
+// deriveAlgorithmKeys derives the NAS encryption and integrity keys of the
+// algorithms named from kAmf (TS 33.501 A.8) and takes them into use; the
+// caller holds the mutex.
+func (ctx *NasContext) deriveAlgorithmKeys(encAlg, intAlg uint8, kAmf []byte) (err error) {
 	ctx.encAlg = encAlg
 	ctx.intAlg = intAlg
 	// Encryption Key
@@ -165,11 +195,6 @@ func (ctx *NasContext) DeriveKeys(encAlg, intAlg uint8, kAmf []byte) (err error)
 	}
 	copy(ctx.encKey[:], kEnc[16:32])
 	copy(ctx.intKey[:], kInt[16:32])
-	for i := range ctx.pairs {
-		ctx.pairs[i].local.set(0, 0)
-		ctx.pairs[i].remote.reset()
-		ctx.pairs[i].remoteLast = 0
-	}
 	return
 }
 
